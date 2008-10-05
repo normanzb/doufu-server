@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<body>
+<script src="./Binaries/doufu.packed.js"></script>
+<script src="./doufu.SampleGame.js"></script>
+<script src="nscConfig.js"></script>
+<script src="nscMain.js"></script>
+<div>
+	<div>Test panel</div>
+	Grandpa: <br />
+	<button accesskey="a" onmousedown="godFather.StartMoving(new doufu.Game.Direction(48), 249)" onmouseup="godFather.StopMoving();">&#8592;</button>
+	<button accesskey="d" onmousedown="godFather.StartMoving(new doufu.Game.Direction(16), 249)" onmouseup="godFather.StopMoving();">&#8594;</button>
+	<button accesskey="a" onmousedown="godFather.StartMoving(new doufu.Game.Direction(12), 249)" onmouseup="godFather.StopMoving();">&#8593;</button>
+	<button accesskey="d" onmousedown="godFather.StartMoving(new doufu.Game.Direction(4), 249)" onmouseup="godFather.StopMoving();">&#8595;</button>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<button onmouseup="GeneralPlayGroundManager.Camera().Trace(godFather);">Trace</button> <button onmouseup="alert('x:' + godFather.X + '\r\ny:' + godFather.Y)">Info</button>
+	<br />
+	MaskKiller: <br />
+	<button accesskey="a" onmousedown="mKiller.StartMoving(new doufu.Game.Direction(48), 349)" onmouseup="mKiller.StopMoving();">&#8592;</button>
+	<button accesskey="d" onmousedown="mKiller.StartMoving(new doufu.Game.Direction(16), 349)" onmouseup="mKiller.StopMoving();">&#8594;</button>
+	<button accesskey="a" onmousedown="mKiller.StartMoving(new doufu.Game.Direction(12), 349)" onmouseup="mKiller.StopMoving();">&#8593;</button>
+	<button accesskey="d" onmousedown="mKiller.StartMoving(new doufu.Game.Direction(4), 349)" onmouseup="mKiller.StopMoving();">&#8595;</button>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<button onmouseup="GeneralPlayGroundManager.Camera().Trace(mKiller);">Trace</button>
+	<div style="background-color:#ddd;">
+		Build it before test!!<br />
+		Press Alt+Shift+~ to open debug console.
+	</div>
+</div>
+</body>
+</html>
