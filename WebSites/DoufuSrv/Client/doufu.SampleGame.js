@@ -1,4 +1,13 @@
+/*
+	Namespace: doufu.SampleGame
+*/
 doufu.SampleGame = {};
+
+doufu.SampleGame.Name = "Sample of Doufu Framework";
+
+/*
+	Namespace: doufu.SampleGame.Roles
+*/
 doufu.SampleGame.Roles = new Object();
 doufu.SampleGame.Roles.Helpers = new Object();
 doufu.SampleGame.Roles.Helpers.SetPolygon = function(fourDirectionSprite)
@@ -498,11 +507,20 @@ doufu.SampleGame.ServiceMapper.PATH_DOUFU_SERVICE = "http://a.doufu.local/DoufuS
 doufu.SampleGame.ServiceMapper.PATH_DOUFU_COMET = "http://c.doufu.local/DoufuSrv/APIs.asmx/";
 doufu.SampleGame.ServiceMapper.RequestFactory = function(rq, sMethodName, fSuccess, fFail)
 {
-	var sFullPath = doufu.SampleGame.ServiceMapper.PATH_DOUFU_SERVICE + sMethodName;
+	var sFullPath = doufu.SampleGame.ServiceMapper.PATH_DOUFU_SERVICE + sMethodName;;
 	
-	if (sMethodName == "Sync")
+	if (sMethodName == "Sync" || sMethodName == 'SyncWithCallback')
 	{
 		sFullPath = doufu.SampleGame.ServiceMapper.PATH_DOUFU_COMET + sMethodName;
+		
+		if (sMethodName == 'SyncWithCallback')
+		{
+			rq.OnSuccess.Attach(new doufu.Event.CallBack(fSuccess, this));
+			//rq.OnFail.Attach(new doufu.Event.CallBack(fFail, this));
+			rq.Open(sFullPath, "sCallbackMethod");
+			
+			return rq;
+		}
 	}
 	
 	rq.OnSuccess.Attach(new doufu.Event.CallBack(fSuccess, this));
@@ -510,6 +528,8 @@ doufu.SampleGame.ServiceMapper.RequestFactory = function(rq, sMethodName, fSucce
 	rq.Open("POST", 
 		sFullPath,
 		true);
+	
+	
 	return rq;
 }
 doufu.SampleGame.ServiceMapper.Authenticate = function(sUser, sPassword, fSuccess, fFail)
@@ -563,8 +583,137 @@ doufu.SampleGame.ServiceMapper.Sync = function(oCube, fSuccess, fFail)
 		z: oCube.Z
 	});
 }
+
+doufu.SampleGame.ServiceMapper.SyncWithCallback = function(fSuccess)
+{
+	var rq = new doufu.Http.JSON();
+	doufu.SampleGame.ServiceMapper.RequestFactory(rq, "SyncWithCallback", fSuccess);
+	
+	rq.Send();
+}
+
 /*
-doufu.SampleGame.ServiceMapper.Authenticate("test","ps",function(args){var tmp = doufu.Http.JSON.GetObject(args.ResponseText);alert(tmp.Return)}, function(args){});
-doufu.SampleGame.ServiceMapper.Initialize(GeneralPlayGroundManager.Camera(),function(args){var tmp = doufu.Http.JSON.GetObject(args.ResponseText);alert(tmp.Return)}, function(args){alert(args.ResponseText)});
-doufu.SampleGame.ServiceMapper.MoveTo(godFather,function(args){var tmp = doufu.Http.JSON.GetObject(args.ResponseText);alert(tmp.Return)}, function(args){alert(args.ResponseText)});
+	Namespace: doufu.SampleGame.UI
 */
+doufu.SampleGame.UI = {};
+
+doufu.SampleGame.UI.Base = function()
+{
+	$c(this);
+	
+	/*
+		Event: OnConfirmed
+	*/
+	this.OnConfirmed = new doufu.Event.EventHandler(this);	
+	
+	/*
+		Event: OnCancelled
+	*/
+	this.OnCancelled = new doufu.Event.EventHandler(this);
+	
+	this.Render = function()
+	{
+		
+	}
+	
+	this.Ctor = function()
+	{
+		if (typeof doufu.SampleGame.UI._initialized == $Undefined)
+		{
+			
+			doufu.SampleGame.UI._initialized = true;
+		}
+	}
+	
+	this.Ctor();
+}
+
+doufu.SampleGame.UI.Controller = function()
+{
+	$c(this);
+	
+	this.Inherit(doufu.DesignPattern.Attachable, [doufu.SampleGame.UI.Base]);
+	
+	this.Render = function()
+	{
+		for(var i = 0; i < this.InnerCollection().Length() - 1; i++)
+		{
+			this.InnerCollection().Items(i).OnConfirmed.Attach(new doufu.Event.CallBack((function(index)
+			{
+				return function()
+				{
+					this.InnerCollection().Items(index).Render();
+				}
+			})(i+1), this));
+		}
+		
+		this.InnerCollection().Items(0).Render();
+	}
+}
+
+doufu.SampleGame.UI.Welcome = function()
+{
+	$c(this);
+	
+	this.Inherit(doufu.SampleGame.UI.Base);
+	
+	var _base_Render = this.OverrideMethod("Render", function()
+	{
+		
+		var self = this;
+		Dialog.alert(
+			"<pre>\t\tWelcome to " + doufu.SampleGame.Name + "\n" + 
+			"This is a prove of concept of doufu framework work " + "\n" + 
+			"(Http://doufu.googlecode.com). Doufu framework is a open sourced" + "\n" + 
+			"game develop framework which dedicated to building pure javascript" + "\n" + 
+			"game." + "\n" + 
+			"This prove of concept will containing demostration of following"  + "\n" + 
+			"features:" + "\n" + 
+			"\t1. Sprite moving." + "\n" +
+			"\t2. Collision detection." + "\n" +
+			"\t3. Event Trigger." + "\n" +
+			"\t4. Sprite tracing." + "\n" +
+			"\t5. Multi player." + "\n" +
+			"</pre>",
+			{
+				className: "alphacube",
+				width:600,
+				height:300,
+				okLabel: "OK",
+				ok: function(win)
+				{
+					setTimeout(self.OnConfirmed.Invoke, 1000);
+					return true;
+				}
+			}
+		);
+	});
+}
+
+doufu.SampleGame.UI.Login = function()
+{
+	$c(this);
+	
+	this.Inherit(doufu.SampleGame.UI.Base);
+	
+	var _base_Render = this.OverrideMethod("Render", function()
+	{
+		var self = this;
+		Dialog.alert(
+			"Username: <input /><br />" + 
+			"Password: <input /><br />",
+			{
+				className: "alphacube",
+				width:600,
+				height:300,
+				okLabel: "OK",
+				ok: function(win)
+				{
+					setTimeout(self.OnConfirmed.Invoke, 100);
+					return true;
+				}
+			}
+		);
+		
+	});
+}

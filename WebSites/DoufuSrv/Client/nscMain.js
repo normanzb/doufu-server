@@ -68,15 +68,77 @@ function __nsc_MainLoop(){
 	if (__Global_MainLoop_Stop == false) setTimeout(__nsc_MainLoop, lastTimeout);
 }
 
-__nsc_MainLoop();
-
+testLoop = function()
+{
+	var startTime = new Date().getTime();
+	
+	doufu.System.MessageQueue.Push(tmpMsg);
+	
+	var lastTimeout = loopTimeout - new Date().getTime() + startTime;
+	if (lastTimeout < 10)
+	{
+		lastTimeout = 10;
+	}
+	
+	setTimeout(testLoop, lastTimeout);
+}
 
 //====================
 // Test piece, should be removed when release
 
+// test functions
+function t_init()
+{
+	doufu.SampleGame.ServiceMapper.Authenticate("test","ps",function(sender, args){
+		var tmp = doufu.Http.JSON.Parse(args.ResponseText);
+			
+		if (tmp.Return == true)
+		{
+			doufu.System.Logger.Debug("t_init() - Authenticated...");
+			
+			doufu.SampleGame.ServiceMapper.Initialize(GeneralPlayGroundManager.Camera(),
+				function(sender, args){
+					var tmp = doufu.Http.JSON.Parse(args.ResponseText);
+					if (tmp.Return == true)
+					{
+						doufu.System.Logger.Debug("t_init() - Initialized...");
+					}
+				},
+				function(sender, args){alert(args.ResponseText)});
+				
+			doufu.SampleGame.ServiceMapper.MoveTo(godFather,
+				function(sender, args){
+					var tmp = doufu.Http.JSON.Parse(args.ResponseText);
+					if (tmp.Return == true)
+					{
+						doufu.System.Logger.Debug("t_init() - Moved...");
+					}
+				},
+				function(sender, args){alert(args.ResponseText)});
+		}
+		
+	}, function(sender, args){});
+}
+
+function t_getSync()
+{
+	doufu.SampleGame.ServiceMapper.SyncWithCallback(function(sender, args)
+	{
+		if (args.ResponseJSON.Return)
+		{
+			for(var spr in args.ResponseJSON.Movements)
+			{
+				doufu.System.Logger.Debug(
+					args.ResponseJSON.Movements[spr].X + "\n" +
+					args.ResponseJSON.Movements[spr].Y
+				);
+			}
+		}
+	});
+}
 
 tmpMsg = new doufu.System.Message();
-tmpMsg.Handler = doufu.System.Handler.Constants.BROADCAST;
+tmpMsg.Handle = doufu.System.Handle.Constants.BROADCAST;
 tmpMsg.Message = doufu.System.MessageConstants.DISPLAY_RENDER;
 
 doufu.System.MessageQueue.Push(tmpMsg);
@@ -120,22 +182,25 @@ GeneralPlayGroundManager.Camera().Trace(godFather);
 GeneralPlayGroundManager.InsertObject(godFather);
 GeneralPlayGroundManager.InsertObject(mKiller);
 
-testLoop = function()
-{
-	var startTime = new Date().getTime();
-	
-	doufu.System.MessageQueue.Push(tmpMsg);
-	
-	var lastTimeout = loopTimeout - new Date().getTime() + startTime;
-	if (lastTimeout < 10)
-	{
-		lastTimeout = 10;
-	}
-	
-	setTimeout(testLoop, lastTimeout);
-}
-testLoop();
-
 
 //godFather.StartMoving(new doufu.Game.Direction(16), 49)
 //====================
+
+function StartLoops()
+{
+	// main loop
+	__nsc_MainLoop();
+	// message loop
+	testLoop();
+}
+
+uiLogin = new doufu.SampleGame.UI.Login();
+uiLogin.OnConfirmed.Attach(new doufu.Event.CallBack(function()
+{
+	StartLoops();
+}, this));
+
+uiController = new doufu.SampleGame.UI.Controller();
+uiController.Attach(new doufu.SampleGame.UI.Welcome());
+uiController.Attach(uiLogin);
+uiController.Render();

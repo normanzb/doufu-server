@@ -29,7 +29,6 @@ public class APIs : System.Web.Services.WebService
     [WebMethod(EnableSession = true)]
     public void Authenticate(string sUser, string sPassword)
     {
-        System.Net.Cookie.
         Doufu.JSON.Object<Doufu.JSON.IJSONObject> jRoot = new Doufu.JSON.Object<Doufu.JSON.IJSONObject>();
 
         // TODO: check username and password
@@ -89,14 +88,14 @@ public class APIs : System.Web.Services.WebService
     [WebMethod(EnableSession = true)]
     public void Sync()
     {
-        this.SyncCallback(null);
+        this.SyncWithCallback(null);
     }
 
     /// <summary>
     /// 
     /// </summary>
     [WebMethod(EnableSession = true)]
-    public void SyncCallback(string sCallbackMethod)
+    public void SyncWithCallback(string sCallbackMethod)
     {
 
         Doufu.JSON.Object<Doufu.JSON.IJSONObject> jRoot,jMovement;
@@ -127,6 +126,9 @@ public class APIs : System.Web.Services.WebService
             if (sCallbackMethod != null)
             {
                 jr.RespondComet(jRoot, sCallbackMethod);
+
+                // only single sync if the callback is specified.
+                return;
             }
             else
             {
