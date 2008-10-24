@@ -19,6 +19,7 @@ public class AppData
 
     private const string KEY_COORDINATES = "coordinates";
     private const string KEY_LAST_ACTIVITY = "lastActivity";
+    private object locker = new object();
     public static AppData Instance = new AppData();
 
     private AppData()
@@ -40,12 +41,15 @@ public class AppData
     {
         get
         {
-            if (!this.Coordinates.ContainsKey(SessionData.Instance.User))
+            lock (locker)
             {
-                this.Coordinates[SessionData.Instance.User] = new Cube();
-            }
+                if (!this.Coordinates.ContainsKey(SessionData.Instance.User))
+                {
+                    this.Coordinates[SessionData.Instance.User] = new Cube();
+                }
 
-            return this.Coordinates[SessionData.Instance.User];
+                return this.Coordinates[SessionData.Instance.User];
+            }
         }
 
     }
@@ -54,12 +58,15 @@ public class AppData
     {
         get
         {
-            if (this.AppState[KEY_COORDINATES] == null)
+            lock (locker)
             {
-                this.AppState[KEY_COORDINATES] = new Dictionary<string, Cube>();
-            }
+                if (this.AppState[KEY_COORDINATES] == null)
+                {
+                    this.AppState[KEY_COORDINATES] = new Dictionary<string, Cube>();
+                }
 
-            return (Dictionary<string, Cube>)this.AppState[KEY_COORDINATES];
+                return (Dictionary<string, Cube>)this.AppState[KEY_COORDINATES];
+            }
         }
     }
 
@@ -67,16 +74,22 @@ public class AppData
     {
         get
         {
-            if (!this.LastActivity.ContainsKey(SessionData.Instance.User))
+            lock (locker)
             {
-                return DateTime.Now.AddYears(-99);
-            }
+                if (!this.LastActivity.ContainsKey(SessionData.Instance.User))
+                {
+                    return DateTime.Now.AddYears(-99);
+                }
 
-            return this.LastActivity[SessionData.Instance.User];
+                return this.LastActivity[SessionData.Instance.User];
+            }
         }
         set
         {
-            this.LastActivity[SessionData.Instance.User] = value;
+            lock (locker)
+            {
+                this.LastActivity[SessionData.Instance.User] = value;
+            }
         }
     }
 
@@ -84,12 +97,15 @@ public class AppData
     {
         get
         {
-            if (this.AppState[KEY_LAST_ACTIVITY] == null)
+            lock (locker)
             {
-                this.AppState[KEY_LAST_ACTIVITY] = new Dictionary<string, DateTime>();
-            }
+                if (this.AppState[KEY_LAST_ACTIVITY] == null)
+                {
+                    this.AppState[KEY_LAST_ACTIVITY] = new Dictionary<string, DateTime>();
+                }
 
-            return (Dictionary<string, DateTime>)this.AppState[KEY_LAST_ACTIVITY];
+                return (Dictionary<string, DateTime>)this.AppState[KEY_LAST_ACTIVITY];
+            }
         }
     }
 }

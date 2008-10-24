@@ -16,6 +16,7 @@ public class SessionData
 {
     private const string KEY_USER = "user";
     private const string KEY_CAMERA = "camera";
+    private object locker = new object();
     
     public static SessionData Instance = new SessionData();
 
@@ -38,20 +39,25 @@ public class SessionData
     {
         get
         {
-            string user = (string)this.Session[KEY_USER];
-            if (user == null || user.Trim() == string.Empty)
+            lock (locker)
             {
-                return string.Empty;
+                string user = (string)this.Session[KEY_USER];
+                if (user == null || user.Trim() == string.Empty)
+                {
+                    return string.Empty;
+                }
+                else
+                {
+                    return user;
+                }
             }
-            else
-            {
-                return user;
-            }
-
         }
         set
         {
-            this.Session[KEY_USER] = value;
+            lock (locker)
+            {
+                this.Session[KEY_USER] = value;
+            }
         }
     }
 
@@ -59,12 +65,15 @@ public class SessionData
     {
         get
         {
-            if (this.Session[KEY_CAMERA] == null)
+            lock (locker)
             {
-                this.Session[KEY_CAMERA] = new Rectangle();
-            }
+                if (this.Session[KEY_CAMERA] == null)
+                {
+                    this.Session[KEY_CAMERA] = new Rectangle();
+                }
 
-            return (Rectangle)this.Session[KEY_CAMERA];
+                return (Rectangle)this.Session[KEY_CAMERA];
+            }
         }
     }
 
