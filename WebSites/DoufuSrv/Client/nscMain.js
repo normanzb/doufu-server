@@ -87,9 +87,9 @@ testLoop = function()
 // Test piece, should be removed when release
 
 // test functions
-function t_init()
+function t_init(user, pass)
 {
-	doufu.SampleGame.ServiceMapper.Authenticate("test","ps",function(sender, args){
+	doufu.SampleGame.ServiceMapper.Authenticate(user,pass,function(sender, args){
 		var tmp = doufu.Http.JSON.Parse(args.ResponseText);
 			
 		if (tmp.Return == true)
@@ -102,16 +102,17 @@ function t_init()
 					if (tmp.Return == true)
 					{
 						doufu.System.Logger.Debug("t_init() - Initialized...");
-					}
-				},
-				function(sender, args){alert(args.ResponseText)});
-				
-			doufu.SampleGame.ServiceMapper.MoveTo(godFather,
-				function(sender, args){
-					var tmp = doufu.Http.JSON.Parse(args.ResponseText);
-					if (tmp.Return == true)
-					{
-						doufu.System.Logger.Debug("t_init() - Moved...");
+							doufu.SampleGame.ServiceMapper.MoveTo(godFather,
+							function(sender, args){
+								var tmp = doufu.Http.JSON.Parse(args.ResponseText);
+								if (tmp.Return == true)
+								{
+									doufu.System.Logger.Debug("t_init() - Moved...");
+									doufu.System.Logger.Debug("t_init() - Starting looping...");
+									StartLoops();
+								}
+							},
+							function(sender, args){alert(args.ResponseText)});
 					}
 				},
 				function(sender, args){alert(args.ResponseText)});
@@ -195,9 +196,9 @@ function StartLoops()
 }
 
 uiLogin = new doufu.SampleGame.UI.Login();
-uiLogin.OnConfirmed.Attach(new doufu.Event.CallBack(function()
+uiLogin.OnConfirmed.Attach(new doufu.Event.CallBack(function(sender, args)
 {
-	StartLoops();
+	t_init(args.User, args.Pass);
 }, this));
 
 uiController = new doufu.SampleGame.UI.Controller();

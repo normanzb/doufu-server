@@ -663,7 +663,7 @@ doufu.SampleGame.UI.Welcome = function()
 		var self = this;
 		Dialog.alert(
 			"<pre>\t\tWelcome to " + doufu.SampleGame.Name + "\n" + 
-			"This is a prove of concept of doufu framework work " + "\n" + 
+			"This is a prove of concept of doufu framework " + "\n" + 
 			"(Http://doufu.googlecode.com). Doufu framework is a open sourced" + "\n" + 
 			"game develop framework which dedicated to building pure javascript" + "\n" + 
 			"game." + "\n" + 
@@ -700,8 +700,8 @@ doufu.SampleGame.UI.Login = function()
 	{
 		var self = this;
 		Dialog.alert(
-			"Username: <input /><br />" + 
-			"Password: <input /><br />",
+			"Username: <input id='idUsername' /><br />" + 
+			"Password: <input id='idPassword' /><br />",
 			{
 				className: "alphacube",
 				width:600,
@@ -709,8 +709,19 @@ doufu.SampleGame.UI.Login = function()
 				okLabel: "OK",
 				ok: function(win)
 				{
-					setTimeout(self.OnConfirmed.Invoke, 100);
-					return true;
+					var username = doufu.Browser.DOM.$s("idUsername").Native().value.trim();
+					var password = doufu.Browser.DOM.$s("idPassword").Native().value.trim();
+					if (username != "" &&
+						password != "")
+					{
+						setTimeout(function()
+						{
+							self.OnConfirmed.Invoke({User: username, Pass: password});
+						}, 100);
+						return true;
+					}
+					
+					return false;
 				}
 			}
 		);
