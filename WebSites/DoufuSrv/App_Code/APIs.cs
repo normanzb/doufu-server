@@ -64,15 +64,25 @@ public class APIs : System.Web.Services.WebService
     public void MoveTo(int x, int y, int z)
     {
         Doufu.JSON.Object<Doufu.JSON.IJSONObject> jRoot = new Doufu.JSON.Object<Doufu.JSON.IJSONObject>();
+        bool bRet;
 
         // record the last activity time
         AppData.Instance.UserLastActivity = DateTime.Now;
 
-        AppData.Instance.UserCoordinates.X = x;
-        AppData.Instance.UserCoordinates.Y = y;
-        AppData.Instance.UserCoordinates.Z = z;
+        if (SessionData.Instance.User.Trim() != string.Empty &&
+            AppData.Instance.UserCoordinates != null)
+        {
+            AppData.Instance.UserCoordinates.X = x;
+            AppData.Instance.UserCoordinates.Y = y;
+            AppData.Instance.UserCoordinates.Z = z;
+            bRet = true;
+        }
+        else
+        {
+            bRet = false;
+        }
 
-        jRoot.Items.Add(KEY_RETURN, new Doufu.JSON.Boolean(true));
+        jRoot.Items.Add(KEY_RETURN, new Doufu.JSON.Boolean(bRet));
         jr.RespondJSON(jRoot);
     }
 

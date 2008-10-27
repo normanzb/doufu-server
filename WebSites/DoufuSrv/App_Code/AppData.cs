@@ -43,7 +43,8 @@ public class AppData
         {
             lock (locker)
             {
-                if (!this.Coordinates.ContainsKey(SessionData.Instance.User))
+                if (SessionData.Instance.User.Trim() != string.Empty &&
+                    !this.Coordinates.ContainsKey(SessionData.Instance.User))
                 {
                     this.Coordinates[SessionData.Instance.User] = new Cube();
                 }

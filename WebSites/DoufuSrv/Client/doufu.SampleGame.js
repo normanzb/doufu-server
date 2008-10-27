@@ -74,11 +74,62 @@ doufu.SampleGame.Roles.Helpers.SetAnimation = function(fourDirectionSprite)
 	fourDirectionSprite.AnimationInfos.MoveDown.PlayReboundly = playreboundly;
 }
 
-doufu.SampleGame.Roles.Grandpa = function()
+doufu.SampleGame.Roles.Base = function()
 {
 	$c(this);
 	
 	this.Inherit(doufu.Game.Sprites.FourDirectionSprite);
+	
+	this.WalkSpeed = 249;
+	this.RunSpeed = 549;
+	
+	
+	this.WalkNorth = function()
+	{
+		this.StartMoving(new doufu.Game.Direction(12), this.WalkSpeed);
+	}
+	
+	this.WalkSouth = function()
+	{
+		this.StartMoving(new doufu.Game.Direction(4), this.WalkSpeed);
+	}
+	
+	this.WalkEast = function()
+	{
+		this.StartMoving(new doufu.Game.Direction(16), this.WalkSpeed);
+	}
+	
+	this.WalkWest = function()
+	{
+		this.StartMoving(new doufu.Game.Direction(48), this.WalkSpeed);
+	}
+	
+	this.RunNorth = function()
+	{
+		this.StartMoving(new doufu.Game.Direction(12), this.RunSpeed);
+	}
+	
+	this.RunSouth = function()
+	{
+		this.StartMoving(new doufu.Game.Direction(4), this.RunSpeed);
+	}
+	
+	this.RunEast = function()
+	{
+		this.StartMoving(new doufu.Game.Direction(16), this.RunSpeed);
+	}
+	
+	this.RunWest = function()
+	{
+		this.StartMoving(new doufu.Game.Direction(48), this.RunSpeed);
+	}
+}
+
+doufu.SampleGame.Roles.Grandpa = function()
+{
+	$c(this);
+	
+	this.Inherit(doufu.SampleGame.Roles.Base);
 	
 	// Set the image offset
 	//this.ImageOffset.X = 24*3;
@@ -143,7 +194,7 @@ doufu.SampleGame.Roles.Grandma = function()
 {
 	$c(this);
 	
-	this.Inherit(doufu.Game.Sprites.FourDirectionSprite);
+	this.Inherit(doufu.SampleGame.Roles.Base);
 	
 	this.Width = 24;
 	this.Height = 32;
@@ -205,7 +256,7 @@ doufu.SampleGame.Roles.MaskKiller = function()
 {
 	$c(this);
 	
-	this.Inherit(doufu.Game.Sprites.FourDirectionSprite);
+	this.Inherit(doufu.SampleGame.Roles.Base);
 	
 	this.Width = 24;
 	this.Height = 32;
@@ -497,8 +548,14 @@ doufu.SampleGame.Maps.LonglyIsland = function(oPlayGround)
 	
 	var _base_Initialize = this.OverrideMethod("Initialize", function()
 	{
-		myTrigger.Monitor(this.GoodGuy());
-		myTrigger.Monitor(this.BadGuy());
+		if (this.GoodGuy() != null)
+		{
+			myTrigger.Monitor(this.GoodGuy());
+		}
+		if (this.BadGuy() != null)
+		{
+			myTrigger.Monitor(this.BadGuy());
+		}
 		_base_Initialize.call(this);
 	});
 }
