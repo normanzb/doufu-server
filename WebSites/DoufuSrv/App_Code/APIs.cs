@@ -98,14 +98,14 @@ public class APIs : System.Web.Services.WebService
     [WebMethod(EnableSession = true)]
     public void Sync()
     {
-        this.SyncWithCallback(null);
+        this.SyncWithCallback(null, null);
     }
 
     /// <summary>
     /// 
     /// </summary>
     [WebMethod(EnableSession = true)]
-    public void SyncWithCallback(string sCallbackMethod)
+    public void SyncWithCallback(string sCallbackMethod, string sStatusJSONString)
     {
 
         Doufu.JSON.Object<Doufu.JSON.IJSONObject> jRoot,jMovement;

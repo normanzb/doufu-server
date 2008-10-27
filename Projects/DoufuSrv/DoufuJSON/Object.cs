@@ -30,6 +30,10 @@ namespace Doufu.JSON
             }
         }
 
+        /// <summary>
+        /// Stringify this object to JSON string.
+        /// </summary>
+        /// <returns>JSON string</returns>
         public override string ToString()
         {
             string subObjStr = string.Empty;
@@ -49,7 +53,7 @@ namespace Doufu.JSON
 
                 string skey = kv.Key.ToString().Trim() == string.Empty ? "\"\"" : kv.Key.ToString().Trim();
 
-                subObjStr += skey + ": " + kv.Value.ToString();
+                subObjStr += System.String.Format(@"""{0}"": {1}", skey, kv.Value.ToString());
 
                 firstItem = false;
             }
