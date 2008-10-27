@@ -188,7 +188,7 @@ function syncLoop()
 	if (!synchronizing)
 	{
 		synchronizing = true;
-		doufu.SampleGame.ServiceMapper.SyncWithCallback(function(sender, args)
+		doufu.SampleGame.ServiceMapper.SyncWithCallback(godFather, function(sender, args)
 		{
 			if (args.ResponseJSON.Return != true)
 			{
@@ -283,7 +283,7 @@ function StartLoops()
 	// message loop
 	testLoop();
 	
-	reportLoop();
+	//reportLoop();
 	syncLoop();
 }
 

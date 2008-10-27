@@ -641,12 +641,12 @@ doufu.SampleGame.ServiceMapper.Sync = function(oCube, fSuccess, fFail)
 	});
 }
 
-doufu.SampleGame.ServiceMapper.SyncWithCallback = function(fSuccess)
+doufu.SampleGame.ServiceMapper.SyncWithCallback = function(oCube, fSuccess)
 {
 	var rq = new doufu.Http.JSON();
 	doufu.SampleGame.ServiceMapper.RequestFactory(rq, "SyncWithCallback", fSuccess);
 	
-	rq.Send();
+	rq.Send("sStatusJSONString={\"Movements\":{\"X\":" + oCube.X + ",\"Y\":" + oCube.Y + ",\"Z\":" + oCube.Z + "}}");
 }
 
 /*

@@ -117,7 +117,7 @@ namespace Doufu.JSON
             sJSON = sJSON.Trim();
 
             Object<IJSONObject> jsonRet = new Object<IJSONObject>();
-            Regex reVariableName = new Regex(@"^""[a-zA-Z$]+[a-zA-Z0-9_\$]""$", RegexOptions.None);
+            Regex reVariableName = new Regex(@"^""[a-zA-Z$]+[a-zA-Z0-9_\$]*""$", RegexOptions.None);
             Regex reIsLetter = new Regex(@"^[a-zA-Z]*$", RegexOptions.None);
             Regex reIsNumber = new Regex(@"^[0-9]*$", RegexOptions.None);
 
@@ -150,17 +150,26 @@ namespace Doufu.JSON
                     if (BRACKET_START == sJSON[i])
                     {
                         StringBuilder sInnerJSON =new StringBuilder();
+                        int iBracketCounter = 0;
                         int j;
                         for (j = i; j < sJSON.Length; j++)
                         {
 
                             sInnerJSON.Append(sJSON[j]);
 
-                            if (sJSON[j] == BRACKET_END)
+                            if (sJSON[j] == BRACKET_START)
+                            {
+                                iBracketCounter++;
+                            }
+                            else if (sJSON[j] == BRACKET_END)
+                            {
+                                iBracketCounter--;
+                            }
+
+                            if (iBracketCounter == 0)
                             {
                                 break;
                             }
-
                             
                         }
 
@@ -169,10 +178,11 @@ namespace Doufu.JSON
                         // add value
                         jsonRet.Items.Add(sVariableName, oVariableValue);
 
-                        i = j++;
+                        i = ++j;
                         
                         iStatus = ParsingStatus.ExpectCommas |
-                            ParsingStatus.ExpectEOS;
+                            ParsingStatus.ExpectEOS |
+                            ParsingStatus.ExpectBlank;
                         iConditionMet++;
                         continue;
                     }

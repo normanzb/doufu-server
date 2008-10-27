@@ -61,9 +61,8 @@ public class APIs : System.Web.Services.WebService
     }
 
     [WebMethod(EnableSession = true)]
-    public void MoveTo(int x, int y, int z)
+    private bool SavePosition(int x, int y, int z)
     {
-        Doufu.JSON.Object<Doufu.JSON.IJSONObject> jRoot = new Doufu.JSON.Object<Doufu.JSON.IJSONObject>();
         bool bRet;
 
         // record the last activity time
@@ -81,6 +80,16 @@ public class APIs : System.Web.Services.WebService
         {
             bRet = false;
         }
+
+        return bRet;
+    }
+
+    [WebMethod(EnableSession = true)]
+    public void MoveTo(int x, int y, int z)
+    {
+        Doufu.JSON.Object<Doufu.JSON.IJSONObject> jRoot = new Doufu.JSON.Object<Doufu.JSON.IJSONObject>();
+
+        bool bRet = SavePosition(x, y, z);
 
         jRoot.Items.Add(KEY_RETURN, new Doufu.JSON.Boolean(bRet));
         jr.RespondJSON(jRoot);
@@ -108,9 +117,19 @@ public class APIs : System.Web.Services.WebService
     public void SyncWithCallback(string sCallbackMethod, string sStatusJSONString)
     {
 
-        Doufu.JSON.Object<Doufu.JSON.IJSONObject> jRoot,jMovement;
+        Doufu.JSON.Object<Doufu.JSON.IJSONObject> jRoot,jMovement,jStatus,jStatusMovement;
 
         bool bExited = false;
+
+        if (sStatusJSONString != null && sStatusJSONString.Trim() != string.Empty)
+        {
+            jStatus = Doufu.JSON.Helpers.Parse(sStatusJSONString);
+
+            jStatusMovement = ((Doufu.JSON.Object<Doufu.JSON.IJSONObject>)(jStatus.Items[KEY_MOVEMENTS]));
+            this.SavePosition(((Doufu.JSON.Number)(jStatusMovement.Items["X"])).Value,
+                ((Doufu.JSON.Number)jStatusMovement.Items["Y"]).Value, 
+                ((Doufu.JSON.Number)jStatusMovement.Items["Z"]).Value);
+        }
 
         while (!bExited)
         {
