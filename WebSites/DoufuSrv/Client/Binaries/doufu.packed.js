@@ -6154,6 +6154,226 @@ doufu.DesignPattern.Attachable = function(type)
 	
 	this.Ctor();
 };
+doufu.CustomTypes = new Object();;
+/*
+	Class: doufu.CustomTypes.Collection
+	
+	A strong typed array
+	
+	Constructor:
+		baseClass - Specify a base class, all elements in this collection should inherited from the base class
+*/
+doufu.CustomTypes.Collection = function(baseClass)
+{
+	doufu.OOP.Class(this);
+	
+	/*
+		Property: InnerArray
+		
+		<doufu.Property>
+		Get or set the inner array which used by collection.
+	*/
+	var _innerArray = new Array();
+	this.NewProperty("InnerArray");
+	this.InnerArray.Get = function()
+	{
+		return _innerArray;
+	}
+	this.InnerArray.Set = function(value)
+	{
+		_innerArray = value
+	}
+	
+	/*
+		Property: Length
+		
+		<doufu.Property>
+		Get the lenght of current collection.
+	*/
+	this.NewProperty("Length");
+	this.Length.Get = function()
+	{
+		return _innerArray.length;
+	}
+	this.Length.Set = function(value)
+	{
+		// readonly
+		return;
+	}
+	// Properties end
+	
+	/*
+		Function: Add
+		
+		Add a object of specified type to the collection.
+		
+		Parameters:
+			obj - An object to be added.
+	*/
+	this.Add = function(obj)
+	{
+		if (typeof obj.InstanceOf == doufu.System.Constants.TYPE_UNDEFINED  || !obj.InstanceOf(baseClass))
+		{
+			throw doufu.System.Exception("doufu.CustomTypes.Collection::Add(): Specified object type is not allowed.");
+		}
+			
+		_innerArray.push(obj);
+		return this.Length();
+	}
+	
+	/*
+		Function: AddArray
+		
+		Add a set of objects of specified type to the collection.
+		
+		Parameters:
+			obj - An array of object of specified type .
+	*/
+	this.AddArray = function(obj)
+	{
+		if (typeof obj.length == doufu.System.Constants.TYPE_UNDEFINED || obj.length <= 0)
+		{
+			throw doufu.System.Exception("doufu.CustomTypes.Collection::AddArray(): Specified object is not an array or the array length is 0.");
+		}
+		
+		for (var i = 0; i < obj.length; i ++)
+		{
+			if (typeof obj[i].InstanceOf == doufu.System.Constants.TYPE_UNDEFINED  || !obj[i].InstanceOf(baseClass))
+			{
+				throw doufu.System.Exception("doufu.CustomTypes.Collection::AddArray(): Specified object type is not allowed.");
+			}
+			_innerArray.push(obj[i]);
+		}
+		
+		return this.Length();
+	}
+	
+	/*
+		Function: Remove
+		
+		Remove a object from collection
+		
+		Parameters:
+			obj - An object to be removed.
+	*/
+	this.Remove = function(obj)
+	{
+		for (var i = 0; i < this.Length; i++)
+		{
+			if (_innerArray[i] == obj)
+			{
+				break;
+			}
+		}
+		_innerArray.splice(i,1);
+		return this.Length();
+	}
+	
+	/*
+		Function: Clear
+		
+		Clear the elements in the collection.
+	*/
+	this.Clear = function()
+	{
+		this.InnerArray().length = 0;
+	}
+	
+	/*
+		Function: Items
+		
+		Get the element in the collection with speicifed index.
+	*/
+	this.Items = function(index)
+	{
+		return _innerArray[index];
+	}
+	
+	/*
+		Function: Contain
+		
+		Check if specified obj is in this collection.
+	*/
+	this.Contain = function(obj)
+	{
+		for( var i = 0; i < this.Length(); i++)
+		{
+			if (obj === this.Items(i))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+}
+;
+doufu.CustomTypes.Stack = function()
+{
+	doufu.OOP.Class(this);
+
+	var _top;
+	this.NewProperty("Top");
+	this.Top.Get = function()
+	{
+		return _top;
+	}
+	
+	var _length = 0;
+	this.NewProperty("Length");
+	this.Length.Get = function()
+	{
+		return _length;
+	}
+	this.Length.Set = function(value)
+	{
+		_length = value;
+	}
+
+	this.Push = function(obj)
+	{
+		var tmp = new doufu.CustomTypes.StackElement();
+		tmp.RefObject = obj;
+		tmp.LinkedStackElement = _top;
+		_length++;
+		return _top = tmp;
+	}
+	
+	this.Pop = function()
+	{
+		if (_top != null)
+		{
+			var tmp = _top;
+			_top = _top.LinkedStackElement;
+			_length--;
+			return tmp.RefObject;
+		}
+		return null;
+	}
+	
+
+}
+
+///##########################
+/// Javascript Class
+/// Name: doufu.CustomTypes.StackElement
+/// Description: 
+/// 	An element which used for stacking
+///
+/// Attribute:
+/// 	RefObject: The actual content or data in the stack
+/// 	LinkedStackElement: The stack element which on the bottom of current element
+///
+///##########################
+doufu.CustomTypes.StackElement = function()
+{
+	doufu.OOP.Class(this);
+	
+	this.RefObject = null;
+	this.LinkedStackElement = null;
+	
+};
 doufu.Event = new Object();;
 doufu.Event.EventHandler = function(oContext)
 {
@@ -6223,18 +6443,397 @@ doufu.Event.CallBack = function(pReference, pContext)
 	
 };
 doufu.Browser = new Object();;
+doufu.Browser.BrowserDetect = new function __nsc_Browser_BrowserDetect()
+{
+	this.OSEnum = 
+	{
+		Windows:"Windows", 
+		Mac:	"Mac", 
+		Linux:	"Linux",
+		Unknown:"Unknown"
+	};
+	this.BrowserEnum = 
+	{
+		OmniWeb: 	"OmniWeb", 
+		Safari: 	"Safari", 
+		Opera: 		"Opera",
+		iCab: 		"iCab",
+		Konqueror: 	"Konqueror",
+		Firefox: 	"Firefox",
+		Camino: 	"Camino",
+		Netscape: 	"Netscape",
+		Explorer: 	"Explorer",
+		Mozilla:	"Mozilla",
+		Netscape: 	"Netscape",
+		Unknown:	"Unknown"
+	};
+	
+	this.dataOS = [
+		{
+			string: navigator.platform,
+			subString: "Win",
+			identity: this.OSEnum.Windows
+		},
+		{
+			string: navigator.platform,
+			subString: "Mac",
+			identity: this.OSEnum.Mac
+		},
+		{
+			string: navigator.platform,
+			subString: "Linux",
+			identity: this.OSEnum.Linux
+		}
+	];
+	
+	this.dataBrowser = [
+		{ 	string: navigator.userAgent,
+			subString: "OmniWeb",
+			versionSearch: "OmniWeb/",
+			identity: this.BrowserEnum.OmniWeb
+		},
+		{
+			string: navigator.vendor,
+			subString: "Apple",
+			identity: this.BrowserEnum.Safari
+		},
+		{
+			prop: window.opera,
+			identity: this.BrowserEnum.Opera
+		},
+		{
+			string: navigator.vendor,
+			subString: "iCab",
+			identity: this.BrowserEnum.iCab
+		},
+		{
+			string: navigator.vendor,
+			subString: "KDE",
+			identity: this.BrowserEnum.Konqueror
+		},
+		{
+			string: navigator.userAgent,
+			subString: "Firefox",
+			identity: this.BrowserEnum.Firefox
+		},
+		{
+			string: navigator.vendor,
+			subString: "Camino",
+			identity: this.BrowserEnum.Camino
+		},
+		{		// for newer Netscapes (6+)
+			string: navigator.userAgent,
+			subString: "Netscape",
+			identity: this.BrowserEnum.Netscape
+		},
+		{
+			string: navigator.userAgent,
+			subString: "MSIE",
+			identity: this.BrowserEnum.Explorer,
+			versionSearch: "MSIE"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "Gecko",
+			identity: this.BrowserEnum.Mozilla,
+			versionSearch: "rv"
+		},
+		{ 		// for older Netscapes (4-)
+			string: navigator.userAgent,
+			subString: "Mozilla",
+			identity: this.BrowserEnum.Netscape,
+			versionSearch: "Mozilla"
+		}
+	];
+	
+	this.searchString = function (data) {
+		for (var i=0;i<data.length;i++)	{
+			var dataString = data[i].string;
+			var dataProp = data[i].prop;
+			this.versionSearchString = data[i].versionSearch || data[i].identity;
+			if (dataString) {
+				if (dataString.indexOf(data[i].subString) != -1)
+					return data[i].identity;
+			}
+			else if (dataProp)
+				return data[i].identity;
+		}
+	}
+	
+	this.searchVersion = function (dataString) {
+		var index = dataString.indexOf(this.versionSearchString);
+		if (index == -1) return;
+		return parseFloat(dataString.substring(index+this.versionSearchString.length+1));
+	}
+	
+	this.Ctor = function () 
+	{
+		this.Browser = this.searchString(this.dataBrowser) || doufu.Browser.BrowserDetect.BrowserEnum.Unknown;
+		this.Version = this.searchVersion(navigator.userAgent)
+			|| this.searchVersion(navigator.appVersion)
+			|| "Unknown";
+		this.OS = this.searchString(this.dataOS) || doufu.Browser.BrowserDetect.OSEnum.Unknown;
+	}
+	
+	this.Ctor();
+};
+doufu.Browser.Helpers = new Object();
+
+doufu.Browser.Helpers.SPACE_NAME = "doufu.Browser.Helpers";
+
+doufu.Browser.Helpers.CreateOverflowHiddenDiv = function(sDivID, elmtParent, iWidth , iHeight)
+{
+	var borderWidth = 1;
+	
+	if (sDivID == null ||
+		elmtParent == null)
+	{
+		throw doufu.System.Exception("sDivID and elmtParent were required!");
+	}
+	
+	var retDiv;
+	retDiv = doufu.Browser.DOM.CreateElement("div").Native();
+	retDiv.setAttribute("id", sDivID);
+	retDiv.style.overflow = "hidden";
+	retDiv.style.width = iWidth + "px";
+	retDiv.style.height = iHeight + "px";
+	retDiv.style.border = borderWidth + "px solid #000";
+	
+	elmtParent.appendChild(retDiv);	
+	
+	if (doufu.Browser.DOM.CompatibleMode() == doufu.Browser.DOM.CompatibleMode.CSS1_COMPAT)
+	{
+		retDiv.style.position = "relative";
+	}
+	else if (doufu.Browser.DOM.CompatibleMode() == doufu.Browser.DOM.CompatibleMode.BACK_COMPAT)
+	{
+		
+	}
+	else
+	{
+		doufu.System.APIs.FunctionHooker("appendChild", function(obj)
+			{
+				obj.style.clip="rect(0px " + 
+					doufu.System.Convert.ToString(retDiv.clientLeft + iWidth) + "px " + 
+					iHeight + "px " + retDiv.clientLeft + "px)";
+				//alert(doufu.Browser.Helpers.GetAbsolutePosition(retDiv).Y);
+				//alert(retDiv.clientTop + 
+				//	doufu.System.Convert.ToInt(retDiv.marginTop.replace("px", "")));
+				obj.style.marginTop = "9px";//doufu.Browser.Helpers.GetAbsolutePosition(retDiv).Y;
+				obj.style.marginLeft = "8px";
+			},
+		retDiv);
+	}
+
+	return retDiv;
+}
+
+  /* *
+  * Retrieve the coordinates of the given event relative to the center
+  * of the widget.
+  *
+  * @param event
+  *  A mouse-related DOM event.
+  * @param reference
+  *  A DOM element whose position we want to transform the mouse coordinates to.
+  * @return
+  *    A hash containing keys 'x' and 'y'.
+  */
+doufu.Browser.Helpers.GetRelativeCoordinates = function(event, reference) {
+    var x, y;
+    event = event || window.event;
+    var el = event.target || event.srcElement;
+    if (!window.opera && typeof event.offsetX != 'undefined') {
+      // Use offset coordinates and find common offsetParent
+      var pos = { x: event.offsetX, y: event.offsetY };
+      // Send the coordinates upwards through the offsetParent chain.
+      var e = el;
+      while (e) {
+        e.mouseX = pos.x;
+        e.mouseY = pos.y;
+        pos.x += e.offsetLeft;
+        pos.y += e.offsetTop;
+        e = e.offsetParent;
+      }
+      // Look for the coordinates starting from the reference element.
+      var e = reference;
+      var offset = { x: 0, y: 0 }
+      while (e) {
+        if (typeof e.mouseX != 'undefined') {
+          x = e.mouseX - offset.x;
+          y = e.mouseY - offset.y;
+          break;
+        }
+        offset.x += e.offsetLeft;
+        offset.y += e.offsetTop;
+        e = e.offsetParent;
+      }
+      // Reset stored coordinates
+      e = el;
+      while (e) {
+        e.mouseX = undefined;
+        e.mouseY = undefined;
+        e = e.offsetParent;
+      }
+    }
+    else {
+      // Use absolute coordinates
+      var pos = getAbsolutePosition(reference);
+      x = event.pageX  - pos.x;
+      y = event.pageY - pos.y;
+    }
+    // Subtract distance to middle
+    return { x: x, y: y };
+  }
+
+
+doufu.Browser.Helpers.GetAbsolutePosition = function(element) {
+    var r = new doufu.Display.Drawing.Rectangle();
+    r.X = element.offsetLeft;
+    r.Y = element.offsetTop;
+    if (element.offsetParent) {
+      var tmp = doufu.Browser.Helpers.GetAbsolutePosition(element.offsetParent);
+      r.X += tmp.X;
+      r.Y += tmp.Y;
+    }
+    
+    return r;
+}
+
+/*
+	Function: doufu.Browser.Helpers.EnableBackgroundCache
+	
+	Helps to enable/disable background cache
+	
+	Parameters:
+		bEnable - True to enable, false to disable
+*/
+doufu.Browser.Helpers.EnableBackgroundCache = function(bEnable)
+{
+	// Force IE to use cache.
+	if (doufu.Browser.BrowserDetect.Browser == doufu.Browser.BrowserDetect.BrowserEnum.Explorer)
+	{
+		document.execCommand("BackgroundImageCache", false, bEnable);
+	}
+}
+
+/*
+	Function: doufu.Browser.Helpers.AttachEvent
+	
+	Attach event to the native element.
+	
+	Parameters:
+		oElement - The element to be attached.
+		sEventName - The event name. (keydown, keyup, click....)
+		pFunc - The function to attach.
+*/
+doufu.Browser.Helpers.AttachEvent = function(oElement, sEventName, pFunc)
+{
+	if (doufu.Browser.BrowserDetect.Browser == doufu.Browser.BrowserDetect.BrowserEnum.Explorer &&
+		typeof document.attachEvent != doufu.System.Constants.TYPE_UNDEFINED)
+	{
+		oElement.attachEvent("on" + sEventName.toLowerCase(), pFunc);
+	}
+	else if(typeof document.addEventListener != doufu.System.Constants.TYPE_UNDEFINED)
+	{
+		oElement.addEventListener(sEventName.toLowerCase(), pFunc, false);
+	}
+	else
+	{
+		doufu.System.Logger.Debug("doufu.Browser.Helpers.AttachEvent() - Neither attachEvent nor addEventListener available, use element.onEvent directly.");
+		
+		oElement["on" + sEventName] = pFunc;
+	}
+}
+
+/*
+	Function: doufu.Browser.Helpers.DetachEvent
+	
+	Detach event to the native element.
+	
+	Parameters:
+		oElement - The element to be detached.
+		sEventName - The event name. (keydown, keyup, click....)
+		pFunc - The function to detach.
+*/
+doufu.Browser.Helpers.DetachEvent = function(oElement, sEventName, pFunc)
+{
+	if (doufu.Browser.BrowserDetect.Browser == doufu.Browser.BrowserDetect.BrowserEnum.Explorer &&
+		typeof document.detachEvent != doufu.System.Constants.TYPE_UNDEFINED)
+	{
+		oElement.detachEvent("on" + sEventName.toLowerCase(), pFunc);
+	}
+	else if(typeof document.removeEventListener != doufu.System.Constants.TYPE_UNDEFINED)
+	{
+		oElement.removeEventListener(sEventName.toLowerCase(), pFunc, false);
+	}
+	else
+	{
+		doufu.System.Logger.Debug("doufu.Browser.Helpers.AttachEvent() - Neither detachEvent nor removeEventListener available, use element.onEvent=null directly.");
+		
+		if (oElement["on" + sEventName] == pFunc)
+		{
+			oElement["on" + sEventName] = null;
+		}
+	}
+};
 doufu.Browser.Element = function(element)
 {
 	
 	doufu.OOP.Class(this);
 	
 	var _native;
+	var nativeEventArgProcessor = function(pFunc)
+	{
+		return function(e)
+		{
+			if (doufu.Browser.BrowserDetect.Browser == doufu.Browser.BrowserDetect.BrowserEnum.Explorer &&
+				typeof event != doufu.System.Constants.TYPE_UNDEFINED)
+			{
+				e = event;
+			}
+			
+			pFunc(e);
+		};
+	}
 	
+	/*
+		Property: Native
+		
+		Get the native dom element.
+	*/
 	this.NewProperty("Native");
 	this.Native.Get = function()
 	{
 		return _native;
 	}
+	
+	/*
+		Event: OnKeyDown
+		
+		Fired when onkeydown event of native element was fired.
+		(Any key was pressed)
+	*/
+	var _onkeydown;
+	this.OnKeyDown = new doufu.Event.EventHandler(this);
+	
+	/*
+		Event: OnKeyUp
+		
+		Fired when onkeyup event of native element was fired.
+		(Any key was reelase)
+	*/
+	var _onkeyup;
+	this.OnKeyUp = new doufu.Event.EventHandler(this);
+	
+	/*
+		Event: OnBlur
+		
+		Fired when onblur event of native element was fired.
+		(Any loss focus)
+	*/
+	var _onblur;
+	this.OnBlur = new doufu.Event.EventHandler(this);
 	
 	/*
 		Function: AppendChild
@@ -6263,7 +6862,13 @@ doufu.Browser.Element = function(element)
 		}
 	}
 	
-	this.$a = this.AppendChild
+	this.$a = this.AppendChild;
+	
+	this.Dispose = function()
+	{
+		doufu.Browser.Helpers.DetachEvent(_native, "keydown", _onkeydown);
+		doufu.Browser.Helpers.DetachEvent(_native, "keyup", _onkeyup);
+	}
 	
 	this.Ctor = function()
 	{
@@ -6280,6 +6885,14 @@ doufu.Browser.Element = function(element)
 		{
 			throw doufu.Exception("doufu.Browser.Element::Ctor() - Specified element is null.");
 		}
+		
+		// attach native event listener
+		_onkeydown = nativeEventArgProcessor(this.OnKeyDown.Invoke);
+		doufu.Browser.Helpers.AttachEvent(_native, "keydown", _onkeydown);
+		_onkeyup = nativeEventArgProcessor(this.OnKeyUp.Invoke);
+		doufu.Browser.Helpers.AttachEvent(_native, "keyup", _onkeyup);
+		_onblur = nativeEventArgProcessor(this.OnBlur.Invoke);
+		doufu.Browser.Helpers.AttachEvent(_native, "blur", _onblur);
 	}
 	
 	this.Ctor();
@@ -6446,279 +7059,6 @@ doufu.Browser.GetWindowFromIFrame = function(elmtIFrame)
 	
 	return new doufu.Browser.WindowBase(elmtIFrame.contentWindow);
 		
-};
-doufu.Browser.Helpers = new Object();
-
-doufu.Browser.Helpers.SPACE_NAME = "doufu.Browser.Helpers";
-
-doufu.Browser.Helpers.CreateOverflowHiddenDiv = function(sDivID, elmtParent, iWidth , iHeight)
-{
-	var borderWidth = 1;
-	
-	if (sDivID == null ||
-		elmtParent == null)
-	{
-		throw doufu.System.Exception("sDivID and elmtParent were required!");
-	}
-	
-	var retDiv;
-	retDiv = doufu.Browser.DOM.CreateElement("div").Native();
-	retDiv.setAttribute("id", sDivID);
-	retDiv.style.overflow = "hidden";
-	retDiv.style.width = iWidth + "px";
-	retDiv.style.height = iHeight + "px";
-	retDiv.style.border = borderWidth + "px solid #000";
-	
-	elmtParent.appendChild(retDiv);	
-	
-	if (doufu.Browser.DOM.CompatibleMode() == doufu.Browser.DOM.CompatibleMode.CSS1_COMPAT)
-	{
-		retDiv.style.position = "relative";
-	}
-	else if (doufu.Browser.DOM.CompatibleMode() == doufu.Browser.DOM.CompatibleMode.BACK_COMPAT)
-	{
-		
-	}
-	else
-	{
-		doufu.System.APIs.FunctionHooker("appendChild", function(obj)
-			{
-				obj.style.clip="rect(0px " + 
-					doufu.System.Convert.ToString(retDiv.clientLeft + iWidth) + "px " + 
-					iHeight + "px " + retDiv.clientLeft + "px)";
-				//alert(doufu.Browser.Helpers.GetAbsolutePosition(retDiv).Y);
-				//alert(retDiv.clientTop + 
-				//	doufu.System.Convert.ToInt(retDiv.marginTop.replace("px", "")));
-				obj.style.marginTop = "9px";//doufu.Browser.Helpers.GetAbsolutePosition(retDiv).Y;
-				obj.style.marginLeft = "8px";
-			},
-		retDiv);
-	}
-
-	return retDiv;
-}
-
-  /* *
-  * Retrieve the coordinates of the given event relative to the center
-  * of the widget.
-  *
-  * @param event
-  *  A mouse-related DOM event.
-  * @param reference
-  *  A DOM element whose position we want to transform the mouse coordinates to.
-  * @return
-  *    A hash containing keys 'x' and 'y'.
-  */
-doufu.Browser.Helpers.GetRelativeCoordinates = function(event, reference) {
-    var x, y;
-    event = event || window.event;
-    var el = event.target || event.srcElement;
-    if (!window.opera && typeof event.offsetX != 'undefined') {
-      // Use offset coordinates and find common offsetParent
-      var pos = { x: event.offsetX, y: event.offsetY };
-      // Send the coordinates upwards through the offsetParent chain.
-      var e = el;
-      while (e) {
-        e.mouseX = pos.x;
-        e.mouseY = pos.y;
-        pos.x += e.offsetLeft;
-        pos.y += e.offsetTop;
-        e = e.offsetParent;
-      }
-      // Look for the coordinates starting from the reference element.
-      var e = reference;
-      var offset = { x: 0, y: 0 }
-      while (e) {
-        if (typeof e.mouseX != 'undefined') {
-          x = e.mouseX - offset.x;
-          y = e.mouseY - offset.y;
-          break;
-        }
-        offset.x += e.offsetLeft;
-        offset.y += e.offsetTop;
-        e = e.offsetParent;
-      }
-      // Reset stored coordinates
-      e = el;
-      while (e) {
-        e.mouseX = undefined;
-        e.mouseY = undefined;
-        e = e.offsetParent;
-      }
-    }
-    else {
-      // Use absolute coordinates
-      var pos = getAbsolutePosition(reference);
-      x = event.pageX  - pos.x;
-      y = event.pageY - pos.y;
-    }
-    // Subtract distance to middle
-    return { x: x, y: y };
-  }
-
-
-doufu.Browser.Helpers.GetAbsolutePosition = function(element) {
-    var r = new doufu.Display.Drawing.Rectangle();
-    r.X = element.offsetLeft;
-    r.Y = element.offsetTop;
-    if (element.offsetParent) {
-      var tmp = doufu.Browser.Helpers.GetAbsolutePosition(element.offsetParent);
-      r.X += tmp.X;
-      r.Y += tmp.Y;
-    }
-    
-    return r;
-}
-
-/*
-	Function: doufu.Browser.Helpers.EnableBackgroundCache
-	
-	Helps to enable/disable background cache
-	
-	Parameters:
-		bEnable - True to enable, false to disable
-*/
-doufu.Browser.Helpers.EnableBackgroundCache = function(bEnable)
-{
-	// Force IE to use cache.
-	if (doufu.Browser.BrowserDetect.Browser == doufu.Browser.BrowserDetect.BrowserEnum.Explorer)
-	{
-		document.execCommand("BackgroundImageCache", false, bEnable);
-	}
-};
-doufu.Browser.BrowserDetect = new function __nsc_Browser_BrowserDetect()
-{
-	this.OSEnum = 
-	{
-		Windows:"Windows", 
-		Mac:	"Mac", 
-		Linux:	"Linux",
-		Unknown:"Unknown"
-	};
-	this.BrowserEnum = 
-	{
-		OmniWeb: 	"OmniWeb", 
-		Safari: 	"Safari", 
-		Opera: 		"Opera",
-		iCab: 		"iCab",
-		Konqueror: 	"Konqueror",
-		Firefox: 	"Firefox",
-		Camino: 	"Camino",
-		Netscape: 	"Netscape",
-		Explorer: 	"Explorer",
-		Mozilla:	"Mozilla",
-		Netscape: 	"Netscape",
-		Unknown:	"Unknown"
-	};
-	
-	this.dataOS = [
-		{
-			string: navigator.platform,
-			subString: "Win",
-			identity: this.OSEnum.Windows
-		},
-		{
-			string: navigator.platform,
-			subString: "Mac",
-			identity: this.OSEnum.Mac
-		},
-		{
-			string: navigator.platform,
-			subString: "Linux",
-			identity: this.OSEnum.Linux
-		}
-	];
-	
-	this.dataBrowser = [
-		{ 	string: navigator.userAgent,
-			subString: "OmniWeb",
-			versionSearch: "OmniWeb/",
-			identity: this.BrowserEnum.OmniWeb
-		},
-		{
-			string: navigator.vendor,
-			subString: "Apple",
-			identity: this.BrowserEnum.Safari
-		},
-		{
-			prop: window.opera,
-			identity: this.BrowserEnum.Opera
-		},
-		{
-			string: navigator.vendor,
-			subString: "iCab",
-			identity: this.BrowserEnum.iCab
-		},
-		{
-			string: navigator.vendor,
-			subString: "KDE",
-			identity: this.BrowserEnum.Konqueror
-		},
-		{
-			string: navigator.userAgent,
-			subString: "Firefox",
-			identity: this.BrowserEnum.Firefox
-		},
-		{
-			string: navigator.vendor,
-			subString: "Camino",
-			identity: this.BrowserEnum.Camino
-		},
-		{		// for newer Netscapes (6+)
-			string: navigator.userAgent,
-			subString: "Netscape",
-			identity: this.BrowserEnum.Netscape
-		},
-		{
-			string: navigator.userAgent,
-			subString: "MSIE",
-			identity: this.BrowserEnum.Explorer,
-			versionSearch: "MSIE"
-		},
-		{
-			string: navigator.userAgent,
-			subString: "Gecko",
-			identity: this.BrowserEnum.Mozilla,
-			versionSearch: "rv"
-		},
-		{ 		// for older Netscapes (4-)
-			string: navigator.userAgent,
-			subString: "Mozilla",
-			identity: this.BrowserEnum.Netscape,
-			versionSearch: "Mozilla"
-		}
-	];
-	
-	this.searchString = function (data) {
-		for (var i=0;i<data.length;i++)	{
-			var dataString = data[i].string;
-			var dataProp = data[i].prop;
-			this.versionSearchString = data[i].versionSearch || data[i].identity;
-			if (dataString) {
-				if (dataString.indexOf(data[i].subString) != -1)
-					return data[i].identity;
-			}
-			else if (dataProp)
-				return data[i].identity;
-		}
-	}
-	
-	this.searchVersion = function (dataString) {
-		var index = dataString.indexOf(this.versionSearchString);
-		if (index == -1) return;
-		return parseFloat(dataString.substring(index+this.versionSearchString.length+1));
-	}
-	
-	this.Ctor = function () 
-	{
-		this.Browser = this.searchString(this.dataBrowser) || doufu.Browser.BrowserDetect.BrowserEnum.Unknown;
-		this.Version = this.searchVersion(navigator.userAgent)
-			|| this.searchVersion(navigator.appVersion)
-			|| "Unknown";
-		this.OS = this.searchString(this.dataOS) || doufu.Browser.BrowserDetect.OSEnum.Unknown;
-	}
-	
-	this.Ctor();
 };
 /// <PseudoCompileInfo>
 /// 	<Dependencies>
@@ -7940,226 +8280,6 @@ doufu.Display.Manager.Create = function(elmtParent, elmtID, iWidth, iHeight)
 	//tmpDiv.style.height = iHeight + "px";
 	//tmpDiv.style.border = "1px solid #000"; //hard coded
 	return new doufu.Display.Manager(tmpDiv);
-};
-doufu.CustomTypes = new Object();;
-/*
-	Class: doufu.CustomTypes.Collection
-	
-	A strong typed array
-	
-	Constructor:
-		baseClass - Specify a base class, all elements in this collection should inherited from the base class
-*/
-doufu.CustomTypes.Collection = function(baseClass)
-{
-	doufu.OOP.Class(this);
-	
-	/*
-		Property: InnerArray
-		
-		<doufu.Property>
-		Get or set the inner array which used by collection.
-	*/
-	var _innerArray = new Array();
-	this.NewProperty("InnerArray");
-	this.InnerArray.Get = function()
-	{
-		return _innerArray;
-	}
-	this.InnerArray.Set = function(value)
-	{
-		_innerArray = value
-	}
-	
-	/*
-		Property: Length
-		
-		<doufu.Property>
-		Get the lenght of current collection.
-	*/
-	this.NewProperty("Length");
-	this.Length.Get = function()
-	{
-		return _innerArray.length;
-	}
-	this.Length.Set = function(value)
-	{
-		// readonly
-		return;
-	}
-	// Properties end
-	
-	/*
-		Function: Add
-		
-		Add a object of specified type to the collection.
-		
-		Parameters:
-			obj - An object to be added.
-	*/
-	this.Add = function(obj)
-	{
-		if (typeof obj.InstanceOf == doufu.System.Constants.TYPE_UNDEFINED  || !obj.InstanceOf(baseClass))
-		{
-			throw doufu.System.Exception("doufu.CustomTypes.Collection::Add(): Specified object type is not allowed.");
-		}
-			
-		_innerArray.push(obj);
-		return this.Length();
-	}
-	
-	/*
-		Function: AddArray
-		
-		Add a set of objects of specified type to the collection.
-		
-		Parameters:
-			obj - An array of object of specified type .
-	*/
-	this.AddArray = function(obj)
-	{
-		if (typeof obj.length == doufu.System.Constants.TYPE_UNDEFINED || obj.length <= 0)
-		{
-			throw doufu.System.Exception("doufu.CustomTypes.Collection::AddArray(): Specified object is not an array or the array length is 0.");
-		}
-		
-		for (var i = 0; i < obj.length; i ++)
-		{
-			if (typeof obj[i].InstanceOf == doufu.System.Constants.TYPE_UNDEFINED  || !obj[i].InstanceOf(baseClass))
-			{
-				throw doufu.System.Exception("doufu.CustomTypes.Collection::AddArray(): Specified object type is not allowed.");
-			}
-			_innerArray.push(obj[i]);
-		}
-		
-		return this.Length();
-	}
-	
-	/*
-		Function: Remove
-		
-		Remove a object from collection
-		
-		Parameters:
-			obj - An object to be removed.
-	*/
-	this.Remove = function(obj)
-	{
-		for (var i = 0; i < this.Length; i++)
-		{
-			if (_innerArray[i] == obj)
-			{
-				break;
-			}
-		}
-		_innerArray.splice(i,1);
-		return this.Length();
-	}
-	
-	/*
-		Function: Clear
-		
-		Clear the elements in the collection.
-	*/
-	this.Clear = function()
-	{
-		this.InnerArray().length = 0;
-	}
-	
-	/*
-		Function: Items
-		
-		Get the element in the collection with speicifed index.
-	*/
-	this.Items = function(index)
-	{
-		return _innerArray[index];
-	}
-	
-	/*
-		Function: Contain
-		
-		Check if specified obj is in this collection.
-	*/
-	this.Contain = function(obj)
-	{
-		for( var i = 0; i < this.Length(); i++)
-		{
-			if (obj === this.Items(i))
-			{
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-}
-;
-doufu.CustomTypes.Stack = function()
-{
-	doufu.OOP.Class(this);
-
-	var _top;
-	this.NewProperty("Top");
-	this.Top.Get = function()
-	{
-		return _top;
-	}
-	
-	var _length = 0;
-	this.NewProperty("Length");
-	this.Length.Get = function()
-	{
-		return _length;
-	}
-	this.Length.Set = function(value)
-	{
-		_length = value;
-	}
-
-	this.Push = function(obj)
-	{
-		var tmp = new doufu.CustomTypes.StackElement();
-		tmp.RefObject = obj;
-		tmp.LinkedStackElement = _top;
-		_length++;
-		return _top = tmp;
-	}
-	
-	this.Pop = function()
-	{
-		if (_top != null)
-		{
-			var tmp = _top;
-			_top = _top.LinkedStackElement;
-			_length--;
-			return tmp.RefObject;
-		}
-		return null;
-	}
-	
-
-}
-
-///##########################
-/// Javascript Class
-/// Name: doufu.CustomTypes.StackElement
-/// Description: 
-/// 	An element which used for stacking
-///
-/// Attribute:
-/// 	RefObject: The actual content or data in the stack
-/// 	LinkedStackElement: The stack element which on the bottom of current element
-///
-///##########################
-doufu.CustomTypes.StackElement = function()
-{
-	doufu.OOP.Class(this);
-	
-	this.RefObject = null;
-	this.LinkedStackElement = null;
-	
 };
 /*
 	Class: doufu.BenchMark 
@@ -10776,6 +10896,101 @@ doufu.Http.JSON.CallbackManager = new function()
 		
 		this.Callbacks[oJSONRequst.Handle.ID] = null;
 	}
+};
+/*
+	Namespace: doufu.Keyboard
+*/
+doufu.Keyboard = {};
+
+/*
+	Class: doufu.Keyboard.Key
+	
+	Key observer class
+	
+	Constructor:
+		sKey - The key to be observed.
+*/
+doufu.Keyboard.Key = function(sKey)
+{
+	doufu.OOP.Class(this);
+	
+	this.IsKeyDown = false;
+	
+	/*
+		Event: OnKeyDown
+		
+		Fired when the observed key was press down.
+	*/
+	this.OnKeyDown = new doufu.Event.EventHandler(this);
+	
+	/*
+		Event: OnKeyUp
+		
+		Fired when the observed key was released.
+	*/
+	this.OnKeyUp = new doufu.Event.EventHandler(this);
+	
+	this.Ctor = function()
+	{
+		var re = /[a-zA-Z]/;
+		if (sKey.length != 1 || !re.test(sKey))
+		{
+			throw doufu.System.Exception("Key: " + sKey + "was not supported.");
+			return false;
+		}
+		
+		// get the global element
+		var g = new doufu.Browser.Element(
+			doufu.Browser.BrowserDetect.Browser == doufu.Browser.BrowserDetect.BrowserEnum.Explorer?document.body:window
+			);
+		
+		var releaseKey = function()
+		{
+			var statusChanged = false;
+			if (this.IsKeyDown)
+			{
+				statusChanged = true;
+			}
+			
+			this.IsKeyDown = false;
+			this.OnKeyUp.Invoke({StatusChanged:statusChanged});
+		}
+		
+		// attach global events
+		
+		// on key up, need to handle loss focus also.
+		g.OnKeyUp.Attach(new doufu.Event.CallBack(function(sender, args)
+		{
+			if (args.keyCode == sKey.toUpperCase().charCodeAt())
+			{
+				releaseKey.call(this);
+			}
+		},this));
+		g.OnBlur.Attach(new doufu.Event.CallBack(releaseKey, this));
+		
+		// on key down
+		g.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
+		{
+			
+			if (args.keyCode == sKey.toUpperCase().charCodeAt())
+			{
+				var statusChanged = false;
+				if (!this.IsKeyDown)
+				{
+					statusChanged = true;
+				}
+				
+				this.IsKeyDown = true;
+				this.OnKeyDown.Invoke({StatusChanged:statusChanged});
+				
+			}
+			
+		},this));
+		
+		
+	}
+	
+	this.Ctor();
 };
 ; 
 doufu.__version = "0.0.0.2"; 
