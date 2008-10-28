@@ -14,6 +14,7 @@ public class APIs : System.Web.Services.WebService
 {
     private const string KEY_RETURN = "Return";
     private const string KEY_MOVEMENTS = "Movements";
+    private const string KEY_MESSAGE = "Message";
     private const int TIMEOUT = 60000 * 5;
 
     // json responder
@@ -66,7 +67,7 @@ public class APIs : System.Web.Services.WebService
         bool bRet;
 
         // record the last activity time
-        AppData.Instance.UserLastActivity = DateTime.Now;
+        //AppData.Instance.UserLastActivity = DateTime.Now;
 
         if (SessionData.Instance.User.Trim() != string.Empty &&
             AppData.Instance.UserCoordinates != null)
@@ -118,6 +119,7 @@ public class APIs : System.Web.Services.WebService
     {
 
         Doufu.JSON.Object<Doufu.JSON.IJSONObject> jRoot,jMovement,jStatus,jStatusMovement;
+        Doufu.JSON.String jStatusMessage;
 
         bool bExited = false;
 
@@ -126,9 +128,26 @@ public class APIs : System.Web.Services.WebService
             jStatus = Doufu.JSON.Helpers.Parse(sStatusJSONString);
 
             jStatusMovement = ((Doufu.JSON.Object<Doufu.JSON.IJSONObject>)(jStatus.Items[KEY_MOVEMENTS]));
-            this.SavePosition(((Doufu.JSON.Number)(jStatusMovement.Items["X"])).Value,
-                ((Doufu.JSON.Number)jStatusMovement.Items["Y"]).Value, 
-                ((Doufu.JSON.Number)jStatusMovement.Items["Z"]).Value);
+
+            // if movement status is not null, then save char pos
+            if (jStatusMovement != null)
+            {
+                this.SavePosition(((Doufu.JSON.Number)(jStatusMovement.Items["X"])).Value,
+                    ((Doufu.JSON.Number)jStatusMovement.Items["Y"]).Value,
+                    ((Doufu.JSON.Number)jStatusMovement.Items["Z"]).Value);
+            }
+
+            if (jStatus.Items.ContainsKey(KEY_MESSAGE))
+            {
+                jStatusMessage = ((Doufu.JSON.String)(jStatus.Items[KEY_MESSAGE]));
+                
+                if (jStatusMessage != null)
+                {
+                    AppData.Instance.PublicChannel.Add(
+                        new System.Collections.Generic.KeyValuePair<DateTime,string>(DateTime.Now, jStatusMessage.Value)
+                        );
+                }
+            }
         }
 
         while (!bExited)
@@ -149,7 +168,31 @@ public class APIs : System.Web.Services.WebService
                 jMovement.Items.Add(kv.Key, jCube);
             }
 
+            // add message if has
+            if (AppData.Instance.PublicChannel.Count > 0)
+            {
+                for (int i = 0; i < AppData.Instance.PublicChannel.Count; i++)
+                {
+                    if (AppData.Instance.PublicChannel[i].Key > AppData.Instance.UserLastActivity)
+                    {
+                        jRoot.Items.Add(KEY_MESSAGE, new Doufu.JSON.String(AppData.Instance.PublicChannel[i].Value));
+                        break;
+                    }
+                }
+
+                if (AppData.Instance.PublicChannel.Count > 500)
+                {
+                    for (int i = 0; i < 500; i++)
+                    {
+                        AppData.Instance.PublicChannel.RemoveAt(i);
+                    }
+                }
+            }
+
             jRoot.Items.Add(KEY_RETURN, new Doufu.JSON.Boolean(true));
+
+            // record the last activity time
+            AppData.Instance.UserLastActivity = DateTime.Now;
 
             // if call back method name is specified
             if (sCallbackMethod != null)

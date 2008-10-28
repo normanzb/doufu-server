@@ -385,10 +385,14 @@ doufu.Browser.Element=function(element)
 pFunc(e);};}
 this.NewProperty("Native");this.Native.Get=function()
 {return _native;}
-var _onkeydown;this.OnKeyDown=new doufu.Event.EventHandler(this);var _onkeyup;this.OnKeyUp=new doufu.Event.EventHandler(this);var _onblur;this.OnBlur=new doufu.Event.EventHandler(this);this.AppendChild=function(elmtAppend)
+var _onkeydown;this.OnKeyDown=new doufu.Event.EventHandler(this);var _onkeyup;this.OnKeyUp=new doufu.Event.EventHandler(this);var _onfocus;this.OnFocus=new doufu.Event.EventHandler(this);var _onblur;this.OnBlur=new doufu.Event.EventHandler(this);this.AppendChild=function(elmtAppend)
 {var elmtActual=elmtAppend;if(typeof elmtAppend.InstanceOf!=$Undefined&&elmtAppend.InstanceOf(doufu.Browser.Element))
 {elmtActual=elmtAppend.Native();}
 return _native.appendChild(elmtActual);}
+this.RemoveChild=function(elmtRemove)
+{var elmtActual=elmtRemove;if(typeof elmtRemove.InstanceOf!=$Undefined&&elmtRemove.InstanceOf(doufu.Browser.Element))
+{elmtActual=elmtRemove.Native();}
+return _native.removeChild(elmtActual);}
 this.SetAttribute=function(sName,sValue)
 {if(sName.toLowerCase()=="class")
 {return _native.className=sValue;}
@@ -410,7 +414,8 @@ _onkeydown=nativeEventArgProcessor(this.OnKeyDown.Invoke);doufu.Browser.Helpers.
 else
 {self.OnBlur.Invoke(e);}});doufu.Browser.Helpers.AttachEvent(_native,"focusout",_onblur);}
 else
-{_onblur=nativeEventArgProcessor(this.OnBlur.Invoke);doufu.Browser.Helpers.AttachEvent(_native,"blur",_onblur);}}
+{_onblur=nativeEventArgProcessor(this.OnBlur.Invoke);doufu.Browser.Helpers.AttachEvent(_native,"blur",_onblur);}
+_onfocus=nativeEventArgProcessor(this.OnFocus.Invoke);doufu.Browser.Helpers.AttachEvent(_native,"focus",_onfocus);}
 this.Ctor();}
 doufu.Browser.DOMBase=function(docRef)
 {doufu.OOP.Class(this);var _docRef;if(typeof docRef==doufu.System.Constants.TYPE_UNDEFINED||docRef==null)
@@ -929,13 +934,13 @@ this.OnTriggerEvent.Invoke({Cube:this,Who:this});this.X=cubeNextStep.X;this.Y=cu
 this.MoveToDest=function()
 {var drcDest=new doufu.Game.Direction();var x=cubeDestination.X-this.X;var y=cubeDestination.Y-this.Y;var z=cubeDestination.Z-this.Z;var absX=x<0?~x+1:x;var absY=y<0?~y+1:y;var absZ=z<0?~z+1:z;if(absX<stepLength&&absY<stepLength&&z==0)
 {this.StopMoving();return false;}
-drcDest.X(absX>=stepLength?x/absX:0);drcDest.Y(absY>=stepLength?y/absY:0);drcDest.Z(z/absZ);this.Direction=drcDest;}
+drcDest.X(absX>=stepLength?x/absX:0);drcDest.Y(absY>=stepLength?y/absY:0);drcDest.Z(z/absZ);this.Direction=drcDest;return true;}
 this.StartMovingToDest=function(cubeDest,iSpeed)
 {cubeDestination.DeepCopy(cubeDest);if(iSpeed!=null)
 {var temSpeed=doufu.Game.Sprites.Sprite.Speed.CaculateFromInteger(iSpeed);cycleSkip=temSpeed.CycleSkip;stepLength=temSpeed.StepLength;}
-this.MoveToDest();if(this.IsMoving==false)
-{this.IsMoving=true;}
-isMovingDest=true;return true;}
+if(this.MoveToDest())
+{this.IsMoving=true;isMovingDest=true;return true;}
+return false;}
 this.StartMoving=function(oDirection,iSpeed)
 {this.Direction=oDirection;var temSpeed=doufu.Game.Sprites.Sprite.Speed.CaculateFromInteger(iSpeed);cycleSkip=temSpeed.CycleSkip;stepLength=temSpeed.StepLength;if(this.IsMoving==false)
 {this.IsMoving=true;}}
@@ -967,11 +972,15 @@ else if(aniDirection.Y()==1)
 else if(aniDirection.Y()==-1)
 {this.Animation.Play(this.AnimationInfos.MoveUp);}}
 var _base_MoveToDest=this.OverrideMethod("MoveToDest",function()
-{_base_MoveToDest();if(aniDirection!=null&&aniDirection.XAxis()!=this.Direction.XAxis()&&aniDirection.YAxis()!=this.Direction.YAxis())
-{startToPlay.call(this);}});var _base_StartMoving=this.OverrideMethod("StartMoving",function(oDirection,iSpeed)
+{var bRet=_base_MoveToDest();if(aniDirection!=null&&aniDirection.XAxis()!=this.Direction.XAxis()&&aniDirection.YAxis()!=this.Direction.YAxis())
+{startToPlay.call(this);}
+return bRet;});var _base_StartMoving=this.OverrideMethod("StartMoving",function(oDirection,iSpeed)
 {doufu.System.Logger.Verbose("doufu.Game.Sprites.FourDirectionSprite::StartMoving(): Was invoked with following parameters, oDirection = "+oDirection.toString());aniDirection=oDirection;startToPlay.call(this);_base_StartMoving(oDirection,iSpeed);});var _base_StartMovingToDest=this.OverrideMethod("StartMovingToDest",function(cubeDest,iSpeed)
-{_base_StartMovingToDest(cubeDest,iSpeed);aniDirection=this.Direction;if(iSpeed!=null)
-{startToPlay.call(this);}});var _base_StopMoving=this.OverrideMethod("StopMoving",function()
+{if(_base_StartMovingToDest(cubeDest,iSpeed))
+{aniDirection=this.Direction;if(iSpeed!=null)
+{startToPlay.call(this);}
+return true;}
+return false;});var _base_StopMoving=this.OverrideMethod("StopMoving",function()
 {if(this.Direction.X()==-1&&this.AnimationInfos.StopLeft!=null)
 {this.Animation.Play(this.AnimationInfos.StopLeft);}
 else if(this.Direction.X()==1&&this.AnimationInfos.StopRight!=null)
@@ -1209,18 +1218,23 @@ this.Send=function(data)
 {if(this.ReadyState!=1)
 {throw doufu.System.Exception('doufu.Http.JSON::Send() - Conneciton was not opened.');}
 if(_callbackParameterName!=null)
-{var container=doufu.Browser.DOM.$s(CONTAINER_ID)
+{this.OnSuccess.Attach(new doufu.Event.CallBack(function()
+{this.Dispose();},this));var container=doufu.Browser.DOM.$s(CONTAINER_ID)
 if(!container)
 {container=doufu.Browser.DOM.CreateElement('div');container.SetAttribute('id',CONTAINER_ID);doufu.Browser.DOM.Select('$body').AppendChild(container);}
 script=doufu.Browser.DOM.CreateElement('script');script.Native().type="text/javascript";var tmpUrl=doufu.Http.AddStampToUrl(doufu.Http.AddParameterToUrl(this.Url(),_callbackParameterName,sGCallbackFunc));if(data!=null)
-{tmpUrl=tmpUrl+"&"+data;}
+{tmpUrl=tmpUrl+"&"+encodeURI(data);}
 script.Native().src=tmpUrl;container.AppendChild(script);}
 else
 {var rq=new doufu.Http.Request();rq.OnSuccess.Attach(new doufu.Event.CallBack(function(sender,args)
 {alert(this==a);this.OnSuccess.Invoke({"ResponseJSON":doufu.Http.JSON.Parse(args.ResponseText)});},this));rq.Open('GET',this.Url(),true);rq.Send();}}
+this.Dispose=function()
+{var container=doufu.Browser.DOM.$s(CONTAINER_ID);if(container!=null)
+{container.RemoveChild(script);}}
 this.Close=function()
 {if(_callbackParameterName!=null)
-{doufu.Http.JSON.CallbackManager.Unregister(this);}}
+{doufu.Http.JSON.CallbackManager.Unregister(this);}
+this.Dispose();}
 this.Ctor=function()
 {}
 this.Ctor();};doufu.Http.JSON.Parse=function(sJSONStr)

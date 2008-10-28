@@ -33,7 +33,7 @@ namespace Doufu.JSON
 
         public override string ToString()
         {
-            return "\"" + this.Value.ToString() + "\"";
+            return "\"" + this.Value.ToString().Replace("\"", "\\\"") + "\"";
         }
     }
 }

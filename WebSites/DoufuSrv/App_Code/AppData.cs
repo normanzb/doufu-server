@@ -19,6 +19,7 @@ public class AppData
 
     private const string KEY_COORDINATES = "coordinates";
     private const string KEY_LAST_ACTIVITY = "lastActivity";
+    private const string KEY_CHANNEL_PUBLIC = "publicChannel";
     private object locker = new object();
     public static AppData Instance = new AppData();
 
@@ -106,6 +107,22 @@ public class AppData
                 }
 
                 return (Dictionary<string, DateTime>)this.AppState[KEY_LAST_ACTIVITY];
+            }
+        }
+    }
+
+    public Collection<KeyValuePair<DateTime, string>> PublicChannel
+    {
+        get
+        {
+            lock (locker)
+            {
+                if (this.AppState[KEY_CHANNEL_PUBLIC] == null)
+                {
+                    this.AppState[KEY_CHANNEL_PUBLIC] = new Collection<KeyValuePair<DateTime, string>>();
+                }
+
+                return (Collection<KeyValuePair<DateTime, string>>)this.AppState[KEY_CHANNEL_PUBLIC];
             }
         }
     }

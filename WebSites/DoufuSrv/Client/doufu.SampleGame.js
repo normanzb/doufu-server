@@ -83,6 +83,7 @@ doufu.SampleGame.Roles.Base = function()
 	this.WalkSpeed = 249;
 	this.RunSpeed = 549;
 	
+	this.Name = "";
 	
 	this.WalkNorth = function()
 	{
@@ -122,6 +123,11 @@ doufu.SampleGame.Roles.Base = function()
 	this.RunWest = function()
 	{
 		this.StartMoving(new doufu.Game.Direction(48), this.RunSpeed);
+	}
+	
+	this.Say = function(sMsg)
+	{
+		growler.growl(sMsg);
 	}
 }
 
@@ -504,11 +510,11 @@ doufu.SampleGame.Maps.LonglyIsland = function(oPlayGround)
 	{
 		if (args.Who.Attributes.GoodGuy == true)
 		{
-			alert("Hi Honey!");
+			grandma.Say("Grandma: Hi Honey!");
 		}
 		else
 		{
-			alert("ahhhhhh!!!!!!! Leave me alone!");
+			grandma.Say("Grandma: ahhhhhh!!!!!!! Leave me alone!");
 		}
 		
 		args.Who.StopMoving();
@@ -560,9 +566,9 @@ doufu.SampleGame.Maps.LonglyIsland = function(oPlayGround)
 	});
 }
 doufu.SampleGame.ServiceMapper = {};
-doufu.SampleGame.ServiceMapper.PATH_DOUFU_SERVICE = "http://a.doufu.local/DoufuSrv/APIs.asmx/";
+doufu.SampleGame.ServiceMapper.PATH_DOUFU_SERVICE = "../APIs.asmx/";
 // TODO: share cookie between a domain and c domain
-doufu.SampleGame.ServiceMapper.PATH_DOUFU_COMET = "http://a.doufu.local/DoufuSrv/APIs.asmx/";
+doufu.SampleGame.ServiceMapper.PATH_DOUFU_COMET = "../APIs.asmx/";
 doufu.SampleGame.ServiceMapper.RequestFactory = function(rq, sMethodName, fSuccess, fFail)
 {
 	var sFullPath = doufu.SampleGame.ServiceMapper.PATH_DOUFU_SERVICE + sMethodName;;
@@ -642,12 +648,20 @@ doufu.SampleGame.ServiceMapper.Sync = function(oCube, fSuccess, fFail)
 	});
 }
 
-doufu.SampleGame.ServiceMapper.SyncWithCallback = function(oCube, fSuccess)
+doufu.SampleGame.ServiceMapper.SyncWithCallback = function(oArgs, fSuccess)
 {
 	var rq = new doufu.Http.JSON();
 	doufu.SampleGame.ServiceMapper.RequestFactory(rq, "SyncWithCallback", fSuccess);
 	
-	rq.Send("sStatusJSONString={\"Movements\":{\"X\":" + oCube.X + ",\"Y\":" + oCube.Y + ",\"Z\":" + oCube.Z + "}}");
+	var bHasMsg = (typeof oArgs.Message == $Undefined ||
+		oArgs.Message == null ||
+		oArgs.Message.trim() == "")?false: true;
+	
+	var jMovement = "'Movements':{'X':" + oArgs.Cube.X + ",'Y':" + oArgs.Cube.Y + ",'Z':" + oArgs.Cube.Z + "}";
+	var jMessage = "'Message': ' " + oArgs.Message + " '"
+	var jPost = "sStatusJSONString={" + jMovement + (bHasMsg?"," + jMessage:"") + "}";
+	
+	rq.Send(jPost);
 }
 
 /*

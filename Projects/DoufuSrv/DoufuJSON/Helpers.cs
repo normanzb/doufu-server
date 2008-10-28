@@ -100,9 +100,28 @@ namespace Doufu.JSON
         private const char BRACE_START = '[';
         private const char BRACE_END = ']';
         private const char NAME_VALUE_SEPARATOR = ':';
-           
 
+        /// <summary>
+        /// Parse a JSON string to a doufu json object.
+        /// (Do not allow non-standard variable name)
+        /// </summary>
+        /// <param name="sJSON">JSON string</param>
+        /// <param name="bAllowNonStandardVariableName">True to allow non-standard variable name, for example {"foo\0\nfoo":"str"} is allowed.
+        /// Otherwise incorrect format exception will be thrown.</param>
+        /// <returns>Return a doufu json object</returns>
         public static Doufu.JSON.Object<IJSONObject> Parse(string sJSON)
+        {
+            return Parse(sJSON, false);
+        }
+
+        /// <summary>
+        /// Parse a JSON string to a doufu json object
+        /// </summary>
+        /// <param name="sJSON">JSON string</param>
+        /// <param name="bAllowNonStandardVariableName">True to allow non-standard variable name, for example {"foo\0\nfoo":"str"} is allowed.
+        /// Otherwise incorrect format exception will be thrown.</param>
+        /// <returns>Return a doufu json object</returns>
+        public static Doufu.JSON.Object<IJSONObject> Parse(string sJSON, bool bAllowNonStandardVariableName)
         {
             sJSON = sJSON.Trim();
 
@@ -117,7 +136,13 @@ namespace Doufu.JSON
             sJSON = sJSON.Trim();
 
             Object<IJSONObject> jsonRet = new Object<IJSONObject>();
-            Regex reVariableName = new Regex(@"^""[a-zA-Z$]+[a-zA-Z0-9_\$]*""$", RegexOptions.None);
+            Regex reVariableName = new Regex(@"^[""|'][a-zA-Z$]+[a-zA-Z0-9_\$]*[""|']$", RegexOptions.None);
+
+            if (bAllowNonStandardVariableName)
+            {
+                reVariableName = new Regex(@"^[""|'].*[""|']$", RegexOptions.None);
+            }
+
             Regex reIsLetter = new Regex(@"^[a-zA-Z]*$", RegexOptions.None);
             Regex reIsNumber = new Regex(@"^[0-9]*$", RegexOptions.None);
 
@@ -255,7 +280,11 @@ namespace Doufu.JSON
 
                         if (bBroke == true)
                         {
-                            oVariableValue = new String(sValue.ToString());
+
+                            string sFinalValue = sValue.ToString();
+                            sFinalValue = sFinalValue.Replace("\\\"", "\"");
+                            sFinalValue = sFinalValue.Replace("\\\'", "\'");
+                            oVariableValue = new String(sFinalValue);
 
                             // add value
                             jsonRet.Items.Add(sVariableName, oVariableValue);
