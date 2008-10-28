@@ -30,7 +30,7 @@ var reportDelay = 1000;
 var reporting = false;
 var oldReportingCube = new doufu.Display.Drawing.Cube();
 var synchronizing = false;
-var syncDelay = 1000;
+var syncDelay = 600;
 var EmptyMessage = new doufu.System.Message();
 var tmpMsg = new doufu.System.Message();
 
@@ -188,6 +188,7 @@ function syncLoop()
 	if (!synchronizing)
 	{
 		synchronizing = true;
+		//oPreviousPosi.DeepCopy(godFather);
 		doufu.SampleGame.ServiceMapper.SyncWithCallback(godFather, function(sender, args)
 		{
 			if (args.ResponseJSON.Return != true)

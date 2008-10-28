@@ -561,7 +561,8 @@ doufu.SampleGame.Maps.LonglyIsland = function(oPlayGround)
 }
 doufu.SampleGame.ServiceMapper = {};
 doufu.SampleGame.ServiceMapper.PATH_DOUFU_SERVICE = "http://a.doufu.local/DoufuSrv/APIs.asmx/";
-doufu.SampleGame.ServiceMapper.PATH_DOUFU_COMET = "http://c.doufu.local/DoufuSrv/APIs.asmx/";
+// TODO: share cookie between a domain and c domain
+doufu.SampleGame.ServiceMapper.PATH_DOUFU_COMET = "http://a.doufu.local/DoufuSrv/APIs.asmx/";
 doufu.SampleGame.ServiceMapper.RequestFactory = function(rq, sMethodName, fSuccess, fFail)
 {
 	var sFullPath = doufu.SampleGame.ServiceMapper.PATH_DOUFU_SERVICE + sMethodName;;
