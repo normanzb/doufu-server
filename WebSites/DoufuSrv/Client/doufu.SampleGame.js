@@ -500,10 +500,10 @@ doufu.SampleGame.Maps.LonglyIsland = function(oPlayGround)
 	grandma.Y = 405;
 	
 	var triggerWhere = new doufu.Display.Drawing.Cube();
-	triggerWhere.X = grandma.X - 20;
-	triggerWhere.Y = grandma.Y - 20;
-	triggerWhere.Width = grandma.Width + 40;
-	triggerWhere.Height = grandma.Height + 40;
+	triggerWhere.X = grandma.X - 10;
+	triggerWhere.Y = grandma.Y - 10;
+	triggerWhere.Width = grandma.Width + 20;
+	triggerWhere.Height = grandma.Height + 20;
 	
 	myTrigger.Where(triggerWhere);
 	myTrigger.OnTrigger.Attach(new doufu.Event.CallBack(function(sender, args)
@@ -517,7 +517,7 @@ doufu.SampleGame.Maps.LonglyIsland = function(oPlayGround)
 			grandma.Say("Grandma: ahhhhhh!!!!!!! Leave me alone!");
 		}
 		
-		args.Who.StopMoving();
+		//args.Who.StopMoving();
 	}, this));
 	
 	
