@@ -648,21 +648,30 @@ doufu.SampleGame.ServiceMapper.Sync = function(oCube, fSuccess, fFail)
 	});
 }
 
-doufu.SampleGame.ServiceMapper.SyncWithCallback = function(oArgs, fSuccess)
+doufu.SampleGame.ServiceMapper.SyncWithCallback = (function()
 {
 	var rq = new doufu.Http.JSON();
-	doufu.SampleGame.ServiceMapper.RequestFactory(rq, "SyncWithCallback", fSuccess);
+	var _fSuccess;
 	
-	var bHasMsg = (typeof oArgs.Message == $Undefined ||
-		oArgs.Message == null ||
-		oArgs.Message.trim() == "")?false: true;
+	doufu.SampleGame.ServiceMapper.RequestFactory(rq, "SyncWithCallback", function(sender, args)
+	{
+		_fSuccess(sender, args);
+	});
 	
-	var jMovement = "'Movements':{'X':" + oArgs.Cube.X + ",'Y':" + oArgs.Cube.Y + ",'Z':" + oArgs.Cube.Z + "}";
-	var jMessage = "'Message': ' " + oArgs.Message + " '"
-	var jPost = "sStatusJSONString={" + jMovement + (bHasMsg?"," + jMessage:"") + "}";
-	
-	rq.Send(jPost);
-}
+	return function(oArgs, fSuccess)
+	{
+		_fSuccess = fSuccess;
+		var bHasMsg = (typeof oArgs.Message == $Undefined ||
+			oArgs.Message == null ||
+			oArgs.Message.trim() == "")?false: true;
+		
+		var jMovement = "'Movements':{'X':" + oArgs.Cube.X + ",'Y':" + oArgs.Cube.Y + ",'Z':" + oArgs.Cube.Z + "}";
+		var jMessage = "'Message': ' " + oArgs.Message + " '"
+		var jPost = "sStatusJSONString={" + jMovement + (bHasMsg?"," + jMessage:"") + "}";
+		
+		rq.Send(jPost);
+	}
+})();
 
 /*
 	Namespace: doufu.SampleGame.UI

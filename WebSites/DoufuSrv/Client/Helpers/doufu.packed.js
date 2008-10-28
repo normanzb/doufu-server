@@ -1218,8 +1218,7 @@ this.Send=function(data)
 {if(this.ReadyState!=1)
 {throw doufu.System.Exception('doufu.Http.JSON::Send() - Conneciton was not opened.');}
 if(_callbackParameterName!=null)
-{this.OnSuccess.Attach(new doufu.Event.CallBack(function()
-{this.Dispose();},this));var container=doufu.Browser.DOM.$s(CONTAINER_ID)
+{var container=doufu.Browser.DOM.$s(CONTAINER_ID)
 if(!container)
 {container=doufu.Browser.DOM.CreateElement('div');container.SetAttribute('id',CONTAINER_ID);doufu.Browser.DOM.Select('$body').AppendChild(container);}
 script=doufu.Browser.DOM.CreateElement('script');script.Native().type="text/javascript";var tmpUrl=doufu.Http.AddStampToUrl(doufu.Http.AddParameterToUrl(this.Url(),_callbackParameterName,sGCallbackFunc));if(data!=null)
@@ -1229,14 +1228,15 @@ else
 {var rq=new doufu.Http.Request();rq.OnSuccess.Attach(new doufu.Event.CallBack(function(sender,args)
 {alert(this==a);this.OnSuccess.Invoke({"ResponseJSON":doufu.Http.JSON.Parse(args.ResponseText)});},this));rq.Open('GET',this.Url(),true);rq.Send();}}
 this.Dispose=function()
-{var container=doufu.Browser.DOM.$s(CONTAINER_ID);if(container!=null)
+{var container=doufu.Browser.DOM.$s(CONTAINER_ID);if(container!=null&&_callbackParameterName!=null)
 {container.RemoveChild(script);}}
 this.Close=function()
 {if(_callbackParameterName!=null)
 {doufu.Http.JSON.CallbackManager.Unregister(this);}
 this.Dispose();}
 this.Ctor=function()
-{}
+{this.OnSuccess.Attach(new doufu.Event.CallBack(function()
+{this.Dispose();},this));}
 this.Ctor();};doufu.Http.JSON.Parse=function(sJSONStr)
 {eval("var tmpobj = "+sJSONStr);return tmpobj;}
 doufu.Http.JSON.CallbackManager=new function()
