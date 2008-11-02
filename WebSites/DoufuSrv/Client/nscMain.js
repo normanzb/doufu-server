@@ -32,8 +32,7 @@ var scrHeight = 200;
 var reportDelay = 1000;
 var reporting = false;
 var oldReportingCube = new doufu.Display.Drawing.Cube();
-var synchronizing = false;
-var syncDelay = 600;
+var syncDelay = 300;
 
 // chatting related
 var chattingMessages = [];
@@ -199,70 +198,67 @@ function reportLoop()
 	setTimeout(reportLoop, reportDelay);
 }
 
+function syncHandler(sender, args)
+{
+	
+	if (args.ResponseJSON.Return != true)
+	{
+		growler.error("Server side error occured!");
+		return;
+	}
+	
+	// handle spr
+	for (var spr in args.ResponseJSON.Movements)
+	{
+		var sprTmp;
+		
+		if (sUsername == spr)
+		{
+			continue;
+		}
+		
+		var cbTmp = new doufu.Display.Drawing.Cube();
+		cbTmp.X = args.ResponseJSON.Movements[spr].X;
+		cbTmp.Y = args.ResponseJSON.Movements[spr].Y;
+		cbTmp.Z = args.ResponseJSON.Movements[spr].Z;
+
+		
+		if (typeof sprChars[spr] == $Undefined)
+		{
+			
+			sprTmp = new doufu.SampleGame.Roles.MaskKiller();
+			// disable collision
+			sprTmp.EnableCollision = false;
+			GeneralPlayGroundManager.InsertObject(sprTmp);
+			sprChars[spr] = sprTmp;
+			
+			sprTmp.DeepCopy(cbTmp);
+		}
+		else
+		{
+			sprTmp = sprChars[spr];
+			
+			sprTmp.StartMovingToDest(cbTmp ,sprTmp.WalkSpeed);
+		}
+
+	}
+	
+	// handle message
+	if (typeof args.ResponseJSON.Message != $Undefined &&
+		args.ResponseJSON.Message != null &&
+		args.ResponseJSON.Message.trim() != "")
+	{
+		godFather.Say(args.ResponseJSON.Message.trim());
+	}
+	
+}
 function syncLoop()
 {
-	if (!synchronizing)
-	{
-		synchronizing = true;
-		//oPreviousPosi.DeepCopy(godFather);
-		doufu.SampleGame.ServiceMapper.SyncWithCallback({
-			Cube: godFather, 
-			Message: chattingMessages.length > 0?sUsername + ": " + chattingMessages.shift().replace(/[\&|#]*/ig, "").replace(/'/ig,"\\'"):""
-		}, function(sender, args)
-		{
-			if (args.ResponseJSON.Return != true)
-			{
-				growler.error("Server side error occured!");
-				return;
-			}
-			
-			// handle spr
-			for (var spr in args.ResponseJSON.Movements)
-			{
-				var sprTmp;
-				
-				if (sUsername == spr)
-				{
-					continue;
-				}
-				
-				var cbTmp = new doufu.Display.Drawing.Cube();
-				cbTmp.X = args.ResponseJSON.Movements[spr].X;
-				cbTmp.Y = args.ResponseJSON.Movements[spr].Y;
-				cbTmp.Z = args.ResponseJSON.Movements[spr].Z;
-
-				
-				if (typeof sprChars[spr] == $Undefined)
-				{
-					
-					sprTmp = new doufu.SampleGame.Roles.MaskKiller();
-					// disable collision
-					sprTmp.EnableCollision = false;
-					GeneralPlayGroundManager.InsertObject(sprTmp);
-					sprChars[spr] = sprTmp;
-					
-					sprTmp.DeepCopy(cbTmp);
-				}
-				else
-				{
-					sprTmp = sprChars[spr];
-					
-					sprTmp.StartMovingToDest(cbTmp ,sprTmp.WalkSpeed);
-				}
-
-			}
-			
-			// handle message
-			if (typeof args.ResponseJSON.Message != $Undefined &&
-				args.ResponseJSON.Message != null &&
-				args.ResponseJSON.Message.trim() != "")
-			{
-				godFather.Say(args.ResponseJSON.Message.trim());
-			}
-			
-			synchronizing = false;
-		});
-	}
+	//oPreviousPosi.DeepCopy(godFather);
+	doufu.SampleGame.ServiceMapper.SyncWithCallback({
+		Cube: godFather, 
+		Message: chattingMessages.length > 0?sUsername + ": " + chattingMessages.shift().replace(/[\&|#]*/ig, "").replace(/'/ig,"\\'"):""
+	}, syncHandler);
 	
 	setTimeout(syncLoop, syncDelay);
 }
@@ -391,6 +387,7 @@ keyDown.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
 },keyDown));
 keyDown.OnKeyUp.Attach(keyUpCallback);
 
+
 ///////////////
 // handle chatting
 
@@ -402,7 +399,8 @@ if (txtChat != null)
 {
 	txtChat.SetAttribute("id","idTxtChat");
 	txtChat.Native().style.width = scrWidth + "px";
-	doufu.Browser.DOM.$s("$body").AppendChild(txtChat);
+	var elBody = doufu.Browser.DOM.$s("$body");
+	elBody.AppendChild(txtChat);
 	txtChat.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
 	{
 		if (args.keyCode == 13)
@@ -421,4 +419,17 @@ if (txtChat != null)
 	{
 		keyboardMode = 0;
 	},this));
+}
+
+
+// Release when exit
+function GlobalDispose()
+{
+	keyLeft.Dispose();
+	keyRight.Dispose();
+	keyUp.Dispose();
+	keyDown.Dispose();
+
+	txtChat.Dispose();
+	elBody.Dispose();
 }

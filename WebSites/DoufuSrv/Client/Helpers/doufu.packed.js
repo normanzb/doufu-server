@@ -361,7 +361,10 @@ doufu.Browser.Helpers.GetAbsolutePosition=function(element){var r=new doufu.Disp
 return r;}
 doufu.Browser.Helpers.EnableBackgroundCache=function(bEnable)
 {if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer)
-{document.execCommand("BackgroundImageCache",false,bEnable);}}
+{try
+{document.execCommand("BackgroundImageCache",false,bEnable);}
+catch(ex)
+{};}}
 doufu.Browser.Helpers.AttachEvent=function(oElement,sEventName,pFunc)
 {if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer&&typeof document.attachEvent!=doufu.System.Constants.TYPE_UNDEFINED)
 {oElement.attachEvent("on"+sEventName.toLowerCase(),pFunc);}
@@ -385,6 +388,8 @@ doufu.Browser.Element=function(element)
 pFunc(e);};}
 this.NewProperty("Native");this.Native.Get=function()
 {return _native;}
+this.NewProperty("TagName");this.TagName.Get=function()
+{return this.Native().tagName;}
 var _onkeydown;this.OnKeyDown=new doufu.Event.EventHandler(this);var _onkeyup;this.OnKeyUp=new doufu.Event.EventHandler(this);var _onfocus;this.OnFocus=new doufu.Event.EventHandler(this);var _onblur;this.OnBlur=new doufu.Event.EventHandler(this);this.AppendChild=function(elmtAppend)
 {var elmtActual=elmtAppend;if(typeof elmtAppend.InstanceOf!=$Undefined&&elmtAppend.InstanceOf(doufu.Browser.Element))
 {elmtActual=elmtAppend.Native();}
@@ -398,8 +403,20 @@ this.SetAttribute=function(sName,sValue)
 {return _native.className=sValue;}
 else
 {return _native.setAttribute(sName,sValue);}}
-this.$a=this.AppendChild;this.Dispose=function()
-{doufu.Browser.Helpers.DetachEvent(_native,"keydown",_onkeydown);doufu.Browser.Helpers.DetachEvent(_native,"keyup",_onkeyup);}
+this.$a=this.AppendChild;this.HasChild=function(oElement)
+{var elmtSet;var elNative;if(typeof oElement.InstanceOf!=null)
+{elmtSet=this.Native().getElementsByTagName(oElement.TagName());elNative=oElement.Native();}
+{elmtSet=this.Native().getElementsByTagName(oElement.tagName);elNative=oElement;}
+for(i=0;i<elmtSet.length;i++)
+{if(elmtSet[i]==elNative)
+{return true;}}
+return false;}
+this.Dispose=function()
+{doufu.Browser.Helpers.DetachEvent(_native,"keydown",_onkeydown);doufu.Browser.Helpers.DetachEvent(_native,"keyup",_onkeyup);if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer&&(_native==window||_native==document||_native==document.body))
+{doufu.Browser.Helpers.DetachEvent(_native,"focusout",_onblur);}
+else
+{doufu.Browser.Helpers.DetachEvent(_native,"blur",_onblur);}
+doufu.Browser.Helpers.DetachEvent(_native,"focus",_onfocus);_native=null;}
 this.Ctor=function()
 {if((typeof element).toLowerCase()=="string")
 {_native=doufu.Browser.DOM.Select(element);}
@@ -427,14 +444,16 @@ this.NewProperty("DocRef");this.DocRef.Get=function()
 this.Inherit(doufu.Browser.Element,[_docRef]);this.CreateElement=function(sElement)
 {return new doufu.Browser.Element(this.DocRef().createElement(sElement));}
 this.$c=this.CreateElement;this.Select=function(sElementId)
+{var elmt=this.QuickSelect(sElementId);if(elmt!=null)
+{return new doufu.Browser.Element(elmt);}
+return null;}
+this.$s=this.Select;this.QuickSelect=function(sElementId)
 {var elmt;if(sElementId.substring(0,1)=="$")
 {elmt=this.DocRef().getElementsByTagName(sElementId.substring(1,sElementId.length))[0];}
 else
 {elmt=this.DocRef().getElementById(sElementId);}
-if(elmt!=null)
-{return new doufu.Browser.Element(elmt);}
-return null;}
-this.$s=this.Select;this.CompatibleMode=function()
+return elmt;}
+this.$q=this.QuickSelect;this.CompatibleMode=function()
 {if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer&&doufu.Browser.BrowserDetect.Version<6)
 {return doufu.Browser.DOM.CompatibleMode.BACK_COMPAT;}
 else if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Safari)
@@ -663,7 +682,7 @@ this.Render=new doufu.Event.CallBack(function(oSender,oMsg)
 {this.HTMLElement().style.left=this.X+"px";this.HTMLElement().style.top=this.Y+"px";this.HTMLElement().style.zIndex=this.Z;this.HTMLElement().style.width=this.Width+"px";this.HTMLElement().style.height=this.Height+"px";this.HTMLElement().style.backgroundPosition=doufu.System.Convert.ToString(-this.ImageOffset.X)+"px "+doufu.System.Convert.ToString(-this.ImageOffset.Y)+"px";this.HTMLElement().style.backgroundRepeat=BACKGROUND_REPEAT_STYLE;var backgroundImage="url("+this.ImagePath+")";if(backgroundImage!=this.HTMLElement().style.backgroundImage)
 {this.HTMLElement().style.backgroundImage=backgroundImage;}
 doufu.System.Logger.Verbose("doufu.Display.BaseObject: Message="+oMsg.Message+"; Handle="+oMsg.Handle);}},this);this.ImageOffset=new doufu.Display.Drawing.Rectangle();this.ImagePath=new String();this.Z=0;this.IsInView=false;this.Handle=doufu.System.Handle.Generate();this.Ctor=function()
-{this.HTMLElement(doufu.Browser.DOM.CreateElement("div").Native());this.HTMLElement().style.position="absolute";doufu.System.Logger.Debug("doufu.Display.BaseObject::Ctor(): Initialized");}
+{var elDHtml=doufu.Browser.DOM.CreateElement("div");this.HTMLElement(elDHtml.Native());this.HTMLElement().style.position="absolute";elDHtml.Dispose();doufu.System.Logger.Debug("doufu.Display.BaseObject::Ctor(): Initialized");}
 this.Ctor();}
 doufu.Display.Manager=function(oHTMLElement)
 {doufu.OOP.Class(this);var _renderingCycle;var _displayObjects=new Array();var _htmlElement;this.NewProperty("HTMLElement");this.HTMLElement.Get=function()
@@ -708,14 +727,17 @@ this.End=function(sName,signal)
 var elmt=dtStarts.Pop();if(elmt!=null)
 {if(sName!=null)
 {elmt.Name+="/"+sName;}
-elmt.Cost=(new Date().getTime())-elmt.StartTime;iResults.push(elmt);}}}
+elmt.EndTime=(new Date().getTime());elmt.Cost=elmt.EndTime-elmt.StartTime;iResults.push(elmt);}}}
 this.ListToConsole=function()
-{enable=false;for(var i=0;i<iResults.length;i++)
+{enable=false;var iResultsNotDone=[];for(var i=0;i<iResults.length;i++)
+{if(iResults[i].EndTime!=0)
 {doufu.System.Logger.Debug("doufu.BenchMark::ListToConsole() - Name: "+iResults[i].Name+" StartTime: "+
 iResults[i].StartTime+" Cost: "+iResults[i].Cost);}
-iResults.length=0;enable=true;}}
+else
+{iResultsNotDone.push(iResults[i]);}}
+iResults=iResultsNotDone;enable=true;}}
 doufu.BenchMark.Element=function()
-{this.Name="";this.StartTime=0;this.Cost=0;}
+{this.Name="";this.StartTime=0;this.EndTime=0;this.Cost=0;}
 doufu.BenchMark.Signal=function()
 {var value=false;this.IsSet=function()
 {return value;}
@@ -919,7 +941,7 @@ this.OnPaceControlCompleted.Invoke();doufu.System.Logger.Verbose("doufu.Game.Pac
 {this.Cycle=new doufu.Cycling.Cycle(this.WorkerCallback);this.Cycle.Start();}
 this.Ctor();}
 doufu.Game.Sprites=new Object();doufu.Game.Sprites.Sprite=function()
-{doufu.OOP.Class(this);this.Inherit(doufu.Game.BaseObject);var cycleSkip;var stepLength;var frameCounter=0;var isMovingDest=false;var tmpVector=new doufu.Display.Drawing.Vector();var tmpClearCube=new doufu.Display.Drawing.Cube();var cubeNextStep=new doufu.Display.Drawing.Cube();var cubeDestination=new doufu.Display.Drawing.Cube();this.IsMoving=false;this.EnableCollision=true;this.Direction=new doufu.Game.Direction();this.Sharp=null;this.InRangeSharp=new doufu.Display.Drawing.Drawable();this.OnConfirmMovable=new doufu.Event.EventHandler(this);this.OnTriggerEvent=new doufu.Event.EventHandler(this);this.MoveTo=function(oDirection,iLength)
+{doufu.OOP.Class(this);this.Inherit(doufu.Game.BaseObject);var cycleSkip;var stepLength;var frameCounter=0;var isMovingDest=false;var tmpSpeed=new doufu.Game.Sprites.Sprite.Speed();var tmpVector=new doufu.Display.Drawing.Vector();var tmpClearCube=new doufu.Display.Drawing.Cube();var cubeNextStep=new doufu.Display.Drawing.Cube();var cubeDestination=new doufu.Display.Drawing.Cube();this.IsMoving=false;this.EnableCollision=true;this.Direction=new doufu.Game.Direction();this.Sharp=null;this.InRangeSharp=new doufu.Display.Drawing.Drawable();this.OnConfirmMovable=new doufu.Event.EventHandler(this);this.OnTriggerEvent=new doufu.Event.EventHandler(this);this.MoveTo=function(oDirection,iLength)
 {if(eval(doufu.System.APIs.GetIsNullMacro("oDirection")))
 {throw doufu.System.Exception("oDirection should not be null!");}
 if(!oDirection.InstanceOf(doufu.Game.Direction))
@@ -937,12 +959,12 @@ this.MoveToDest=function()
 drcDest.X(absX>=stepLength?x/absX:0);drcDest.Y(absY>=stepLength?y/absY:0);drcDest.Z(z/absZ);this.Direction=drcDest;return true;}
 this.StartMovingToDest=function(cubeDest,iSpeed)
 {cubeDestination.DeepCopy(cubeDest);if(iSpeed!=null)
-{var temSpeed=doufu.Game.Sprites.Sprite.Speed.CaculateFromInteger(iSpeed);cycleSkip=temSpeed.CycleSkip;stepLength=temSpeed.StepLength;}
+{doufu.Game.Sprites.Sprite.Speed.CaculateFromInteger(iSpeed,tmpSpeed);cycleSkip=tmpSpeed.CycleSkip;stepLength=tmpSpeed.StepLength;}
 if(this.MoveToDest())
 {this.IsMoving=true;isMovingDest=true;return true;}
 return false;}
 this.StartMoving=function(oDirection,iSpeed)
-{this.Direction=oDirection;var temSpeed=doufu.Game.Sprites.Sprite.Speed.CaculateFromInteger(iSpeed);cycleSkip=temSpeed.CycleSkip;stepLength=temSpeed.StepLength;if(this.IsMoving==false)
+{this.Direction=oDirection;doufu.Game.Sprites.Sprite.Speed.CaculateFromInteger(iSpeed,tmpSpeed);cycleSkip=tmpSpeed.CycleSkip;stepLength=tmpSpeed.StepLength;if(this.IsMoving==false)
 {this.IsMoving=true;}}
 this.StopMoving=function()
 {if(this.IsMoving==true)
@@ -959,17 +981,21 @@ doufu.Game.Sprites.Sprite.Speed=function(iSpeed)
 {if(typeof iSpeed!=doufu.System.Constants.TYPE_UNDEFINED&&iSpeed!=null)
 {var tmpSpeed=doufu.Game.Sprites.Sprite.Speed.CaculateFromInteger(iSpeed);this.CycleSkip=tmpSpeed.CycleSkip;this.StepLength=tmpSpeed.StepLength;delete tmpSpeed;}}
 this.Ctor();}
-doufu.Game.Sprites.Sprite.Speed.CaculateFromInteger=function(iSpeed)
-{var oRet=new doufu.Game.Sprites.Sprite.Speed();oRet.CycleSkip=49-iSpeed%50;oRet.StepLength=Math.floor(iSpeed/50)+1;return oRet;}
+doufu.Game.Sprites.Sprite.Speed.CaculateFromInteger=function(iSpeed,outSpeed)
+{var oRet;if(outSpeed==null)
+{oRet=new doufu.Game.Sprites.Sprite.Speed();}
+else
+{oRet=outSpeed;}
+oRet.CycleSkip=49-iSpeed%50;oRet.StepLength=Math.floor(iSpeed/50)+1;return oRet;}
 doufu.Game.Sprites.FourDirectionSprite=function(oInfoSet)
 {doufu.OOP.Class(this);this.Inherit(doufu.Game.Sprites.Sprite);var aniDirection=null;this.AnimationInfos={};var startToPlay=function()
-{if(aniDirection.X()==-1)
+{if(aniDirection.X()==-1&&this.Animation.AnimationInfo!=this.AnimationInfos.MoveLeft)
 {this.Animation.Play(this.AnimationInfos.MoveLeft);}
-else if(aniDirection.X()==1)
+else if(aniDirection.X()==1&&this.Animation.AnimationInfo!=this.AnimationInfos.MoveRight)
 {this.Animation.Play(this.AnimationInfos.MoveRight);}
-else if(aniDirection.Y()==1)
+else if(aniDirection.Y()==1&&this.Animation.AnimationInfo!=this.AnimationInfos.MoveDown)
 {this.Animation.Play(this.AnimationInfos.MoveDown);}
-else if(aniDirection.Y()==-1)
+else if(aniDirection.Y()==-1&&this.Animation.AnimationInfo!=this.AnimationInfos.MoveUp)
 {this.Animation.Play(this.AnimationInfos.MoveUp);}}
 var _base_MoveToDest=this.OverrideMethod("MoveToDest",function()
 {var bRet=_base_MoveToDest();if(aniDirection!=null&&aniDirection.XAxis()!=this.Direction.XAxis()&&aniDirection.YAxis()!=this.Direction.YAxis())
@@ -1116,7 +1142,7 @@ this.LinkedPlayGround=oPlayGround;this.LinkedPlayGround.OnInsertObject.Attach(th
 this.Ctor();}
 doufu.Http={}
 doufu.Http.CreateTimeStamp=function()
-{var tDate=new Date();return(new String(tDate.getSeconds()+tDate.getMinutes()*60+tDate.getHours()*3600)+"-"+tDate.getDate().toString()+(tDate.getMonth()+1).toString()+tDate.getYear().toString());}
+{return(new Date()).getTime();}
 doufu.Http.AddParameterToUrl=function(sUrl,sParameterName,sValue)
 {if(sUrl.lastIndexOf("?")+1==sUrl.length)
 {sUrl=sUrl+sValue;}
@@ -1213,30 +1239,46 @@ this.ResponseJSON.Set=function(value)
 this.NewProperty("ResponseText");this.ResponseText.Get=function()
 {return this.ScriptElement().innerHTML;}
 this.OnSuccess=new doufu.Event.EventHandler(this);this.Open=function(sUrl,sCallbackParameterName)
+{if(this.ReadyState==0||this.ReadyState==5)
 {_url=sUrl;_callbackParameterName=sCallbackParameterName;sGCallbackFunc=doufu.Http.JSON.CallbackManager.Register(this);this.ReadyState=1;}
+else
+{throw doufu.System.Exception("Failed to open json request.");}}
 this.Send=function(data)
 {if(this.ReadyState!=1)
 {throw doufu.System.Exception('doufu.Http.JSON::Send() - Conneciton was not opened.');}
-if(_callbackParameterName!=null)
-{var container=doufu.Browser.DOM.$s(CONTAINER_ID)
+this.ReadyState=2;if(_callbackParameterName!=null)
+{var container=document.getElementById(CONTAINER_ID)
 if(!container)
-{container=doufu.Browser.DOM.CreateElement('div');container.SetAttribute('id',CONTAINER_ID);doufu.Browser.DOM.Select('$body').AppendChild(container);}
-script=doufu.Browser.DOM.CreateElement('script');script.Native().type="text/javascript";var tmpUrl=doufu.Http.AddStampToUrl(doufu.Http.AddParameterToUrl(this.Url(),_callbackParameterName,sGCallbackFunc));if(data!=null)
+{container=document.createElement('div');container.setAttribute('id',CONTAINER_ID);document.body.appendChild(container);}
+var tmpUrl=doufu.Http.AddStampToUrl(doufu.Http.AddParameterToUrl(this.Url(),_callbackParameterName,sGCallbackFunc));if(data!=null)
 {tmpUrl=tmpUrl+"&"+encodeURI(data);}
-script.Native().src=tmpUrl;container.AppendChild(script);}
+script=document.createElement('script');script.setAttribute("type","text/javascript");script.src=tmpUrl;container.appendChild(script);}
 else
 {var rq=new doufu.Http.Request();rq.OnSuccess.Attach(new doufu.Event.CallBack(function(sender,args)
-{alert(this==a);this.OnSuccess.Invoke({"ResponseJSON":doufu.Http.JSON.Parse(args.ResponseText)});},this));rq.Open('GET',this.Url(),true);rq.Send();}}
+{alert(this==a);this.OnSuccess.Invoke({"ResponseJSON":doufu.Http.JSON.Parse(args.ResponseText)});},this));rq.Open('GET',this.Url(),true);rq.Send();}
+if(this.ReadyState<4)
+{this.ReadyState=3;}}
 this.Dispose=function()
-{var container=doufu.Browser.DOM.$s(CONTAINER_ID);if(container!=null&&_callbackParameterName!=null)
-{container.RemoveChild(script);}}
+{this.Close();container=null;script=null
+delete container;delete script}
 this.Close=function()
 {if(_callbackParameterName!=null)
 {doufu.Http.JSON.CallbackManager.Unregister(this);}
-this.Dispose();}
+if(this.ReadyState==2)
+{var self=this;setTimeout(function()
+{this.Close.call(self);},500);}
+var container=document.getElementById(CONTAINER_ID);if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer&&doufu.Browser.BrowserDetect.Version<8)
+{var myScript=script;var paramName=_callbackParameterName;setTimeout(function()
+{if(container!=null&&paramName!=null)
+{container.removeChild(myScript);}},5000);}
+else
+{if(container!=null&&_callbackParameterName!=null)
+{container.removeChild(script);}}
+this.ReadyState=5;}
 this.Ctor=function()
 {this.OnSuccess.Attach(new doufu.Event.CallBack(function()
-{this.Dispose();},this));}
+{if(this.ReadyState!=5)
+{this.ReadyState=4;}},this));}
 this.Ctor();};doufu.Http.JSON.Parse=function(sJSONStr)
 {eval("var tmpobj = "+sJSONStr);return tmpobj;}
 doufu.Http.JSON.CallbackManager=new function()
@@ -1251,7 +1293,9 @@ this.Unregister=function(oJSONRequst)
 {throw doufu.System.Exception("doufu.Http.JSON.CallbackManager::Register() - The object specified was not a json request object.");}
 this.Callbacks[oJSONRequst.Handle.ID]=null;}}
 doufu.Keyboard={};doufu.Keyboard.Key=function(sKey)
-{doufu.OOP.Class(this);this.IsKeyDown=false;this.OnKeyDown=new doufu.Event.EventHandler(this);this.OnKeyUp=new doufu.Event.EventHandler(this);this.Ctor=function()
+{doufu.OOP.Class(this);this.IsKeyDown=false;this.OnKeyDown=new doufu.Event.EventHandler(this);this.OnKeyUp=new doufu.Event.EventHandler(this);this.Dispose=function()
+{g.Dispose();}
+this.Ctor=function()
 {var re=/[a-zA-Z]/;if(sKey.length!=1||!re.test(sKey))
 {throw doufu.System.Exception("Key: "+sKey+"was not supported.");return false;}
 var g=new doufu.Browser.Element(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer?document.body:window);var releaseKey=function()

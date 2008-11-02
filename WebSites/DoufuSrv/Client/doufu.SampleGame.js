@@ -83,46 +83,51 @@ doufu.SampleGame.Roles.Base = function()
 	this.WalkSpeed = 249;
 	this.RunSpeed = 549;
 	
+	var drctWest = new doufu.Game.Direction(48);
+	var drctEast = new doufu.Game.Direction(16);
+	var drctNorth = new doufu.Game.Direction(12);
+	var drctSouth = new doufu.Game.Direction(4)
+	
 	this.Name = "";
 	
 	this.WalkNorth = function()
 	{
-		this.StartMoving(new doufu.Game.Direction(12), this.WalkSpeed);
+		this.StartMoving(drctNorth, this.WalkSpeed);
 	}
 	
 	this.WalkSouth = function()
 	{
-		this.StartMoving(new doufu.Game.Direction(4), this.WalkSpeed);
+		this.StartMoving(drctSouth, this.WalkSpeed);
 	}
 	
 	this.WalkEast = function()
 	{
-		this.StartMoving(new doufu.Game.Direction(16), this.WalkSpeed);
+		this.StartMoving(drctEast, this.WalkSpeed);
 	}
 	
 	this.WalkWest = function()
 	{
-		this.StartMoving(new doufu.Game.Direction(48), this.WalkSpeed);
+		this.StartMoving(drctWest, this.WalkSpeed);
 	}
 	
 	this.RunNorth = function()
 	{
-		this.StartMoving(new doufu.Game.Direction(12), this.RunSpeed);
+		this.StartMoving(drctNorth, this.RunSpeed);
 	}
 	
 	this.RunSouth = function()
 	{
-		this.StartMoving(new doufu.Game.Direction(4), this.RunSpeed);
+		this.StartMoving(drctSouth, this.RunSpeed);
 	}
 	
 	this.RunEast = function()
 	{
-		this.StartMoving(new doufu.Game.Direction(16), this.RunSpeed);
+		this.StartMoving(drctEast, this.RunSpeed);
 	}
 	
 	this.RunWest = function()
 	{
-		this.StartMoving(new doufu.Game.Direction(48), this.RunSpeed);
+		this.StartMoving(drctWest, this.RunSpeed);
 	}
 	
 	this.Say = function(sMsg)
@@ -573,18 +578,9 @@ doufu.SampleGame.ServiceMapper.RequestFactory = function(rq, sMethodName, fSucce
 {
 	var sFullPath = doufu.SampleGame.ServiceMapper.PATH_DOUFU_SERVICE + sMethodName;;
 	
-	if (sMethodName == "Sync" || sMethodName == 'SyncWithCallback')
+	if (sMethodName == "Sync")
 	{
 		sFullPath = doufu.SampleGame.ServiceMapper.PATH_DOUFU_COMET + sMethodName;
-		
-		if (sMethodName == 'SyncWithCallback')
-		{
-			rq.OnSuccess.Attach(new doufu.Event.CallBack(fSuccess, this));
-			//rq.OnFail.Attach(new doufu.Event.CallBack(fFail, this));
-			rq.Open(sFullPath, "sCallbackMethod");
-			
-			return rq;
-		}
 	}
 	
 	rq.OnSuccess.Attach(new doufu.Event.CallBack(fSuccess, this));
@@ -653,23 +649,32 @@ doufu.SampleGame.ServiceMapper.SyncWithCallback = (function()
 	var rq = new doufu.Http.JSON();
 	var _fSuccess;
 	
-	doufu.SampleGame.ServiceMapper.RequestFactory(rq, "SyncWithCallback", function(sender, args)
+	rq.OnSuccess.Attach(new doufu.Event.CallBack(function()
 	{
-		_fSuccess(sender, args);
-	});
+		_fSuccess.apply(this, arguments);
+		this.Close();
+		
+	}, rq));
 	
 	return function(oArgs, fSuccess)
 	{
-		_fSuccess = fSuccess;
-		var bHasMsg = (typeof oArgs.Message == $Undefined ||
-			oArgs.Message == null ||
-			oArgs.Message.trim() == "")?false: true;
-		
-		var jMovement = "'Movements':{'X':" + oArgs.Cube.X + ",'Y':" + oArgs.Cube.Y + ",'Z':" + oArgs.Cube.Z + "}";
-		var jMessage = "'Message': ' " + oArgs.Message + " '"
-		var jPost = "sStatusJSONString={" + jMovement + (bHasMsg?"," + jMessage:"") + "}";
-		
-		rq.Send(jPost);
+		if (rq.ReadyState == 0 || rq.ReadyState == 5)
+		{
+			_fSuccess = fSuccess;
+			var bHasMsg = (typeof oArgs.Message == $Undefined ||
+				oArgs.Message == null ||
+				oArgs.Message.trim() == "")?false: true;
+			
+			var jMovement = "'Movements':{'X':" + oArgs.Cube.X + ",'Y':" + oArgs.Cube.Y + ",'Z':" + oArgs.Cube.Z + "}";
+			var jMessage = "'Message': ' " + oArgs.Message + " '"
+			var jPost = "sStatusJSONString={" + jMovement + (bHasMsg?"," + jMessage:"") + "}";
+			
+			
+			//rq.OnFail.Attach(new doufu.Event.CallBack(fFail, this));
+			rq.Open(doufu.SampleGame.ServiceMapper.PATH_DOUFU_SERVICE + "SyncWithCallback",
+			 "sCallbackMethod");
+			rq.Send(jPost);
+		}
 	}
 })();
 
@@ -790,8 +795,15 @@ doufu.SampleGame.UI.Login = function()
 				okLabel: "OK",
 				ok: function(win)
 				{
-					var username = doufu.Browser.DOM.$s("idUsername").Native().value.trim();
-					var password = doufu.Browser.DOM.$s("idPassword").Native().value.trim();
+					var elUser = doufu.Browser.DOM.$s("idUsername");
+					var elPass = doufu.Browser.DOM.$s("idPassword");
+					
+					var username = elUser.Native().value.trim();
+					var password = elPass.Native().value.trim();
+					
+					elUser.Dispose();
+					elPass.Dispose();
+					
 					if (username != "" &&
 						password != "")
 					{
