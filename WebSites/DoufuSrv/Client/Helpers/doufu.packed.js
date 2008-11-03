@@ -942,7 +942,7 @@ this.OnPaceControlCompleted.Invoke();doufu.System.Logger.Verbose("doufu.Game.Pac
 this.Ctor();}
 doufu.Game.Sprites=new Object();doufu.Game.Sprites.Sprite=function()
 {doufu.OOP.Class(this);this.Inherit(doufu.Game.BaseObject);var cycleSkip;var stepLength;var frameCounter=0;var isMovingDest=false;var tmpSpeed=new doufu.Game.Sprites.Sprite.Speed();var tmpVector=new doufu.Display.Drawing.Vector();var tmpClearCube=new doufu.Display.Drawing.Cube();var cubeNextStep=new doufu.Display.Drawing.Cube();var cubeDestination=new doufu.Display.Drawing.Cube();this.IsMoving=false;this.EnableCollision=true;this.Direction=new doufu.Game.Direction();this.Sharp=null;this.InRangeSharp=new doufu.Display.Drawing.Drawable();this.OnConfirmMovable=new doufu.Event.EventHandler(this);this.OnTriggerEvent=new doufu.Event.EventHandler(this);this.MoveTo=function(oDirection,iLength)
-{if(eval(doufu.System.APIs.GetIsNullMacro("oDirection")))
+{if(oDirection==null)
 {throw doufu.System.Exception("oDirection should not be null!");}
 if(!oDirection.InstanceOf(doufu.Game.Direction))
 {throw doufu.System.Exception("oDirection should be a instance of doufu.Game.Direction!");}
