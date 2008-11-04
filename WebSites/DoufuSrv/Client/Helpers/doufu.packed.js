@@ -1191,7 +1191,9 @@ this.GetAllResponseHeaders=function()
 this.Open=function(sMethod,sUrl,bAsync,sUser,sPassword)
 {var sActualUrl=sUrl;if(this.DisableCache()&&sMethod=="GET")
 {sActualUrl=doufu.Http.AddStampToUrl(sUrl);}
-nativeRequest.open(sMethod,sActualUrl,bAsync,sUser,sPassword);nativeRequest.timeout=_timeout;this.OnOpened.Invoke();}
+nativeRequest.open(sMethod,sActualUrl,bAsync,sUser,sPassword);if(!(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer&&doufu.Browser.BrowserDetect.Version<=6))
+{nativeRequest.timeout=_timeout;}
+this.OnOpened.Invoke();}
 this.Abort=function()
 {nativeRequest.abort();}
 this.Close=function()
