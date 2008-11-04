@@ -132,7 +132,7 @@ doufu.SampleGame.Roles.Base = function()
 	
 	this.Say = function(sMsg)
 	{
-		growler.growl(sMsg);
+		doufu.Popup.Pop(sMsg, {GameObject: this});
 	}
 }
 
@@ -820,4 +820,14 @@ doufu.SampleGame.UI.Login = function()
 		);
 		
 	});
+}
+
+// TODO: remove this class to doufu project
+doufu.Popup = new function()
+{
+	this.Pop = function(sMsg)
+	{
+		growler.growl(sMsg);
+		log.info(sMsg);
+	}
 }
