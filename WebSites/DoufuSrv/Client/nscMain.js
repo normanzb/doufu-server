@@ -328,7 +328,6 @@ uiLogin.OnConfirmed.Attach(new doufu.Event.CallBack(function(sender, args)
 uiController = new doufu.SampleGame.UI.Controller();
 uiController.Attach(new doufu.SampleGame.UI.Welcome());
 uiController.Attach(uiLogin);
-uiController.Render();
 
 ///////////////
 // Initialize keyboard 
@@ -433,3 +432,15 @@ function GlobalDispose()
 	txtChat.Dispose();
 	elBody.Dispose();
 }
+
+//////////////////////
+// Entry point
+// render the ui
+var elmtGlobal = new doufu.Browser.Element(
+			doufu.Browser.BrowserDetect.Browser == doufu.Browser.BrowserDetect.BrowserEnum.Explorer?window: document.body
+			);
+
+elmtGlobal.OnLoad.Attach(new doufu.Event.CallBack(function(sender, args)
+{
+	uiController.Render();
+}));
