@@ -86,7 +86,9 @@ doufu.SampleGame.Roles.Base = function()
 	var drctWest = new doufu.Game.Direction(48);
 	var drctEast = new doufu.Game.Direction(16);
 	var drctNorth = new doufu.Game.Direction(12);
-	var drctSouth = new doufu.Game.Direction(4)
+	var drctSouth = new doufu.Game.Direction(4);
+		
+	var bubbles = new doufu.SpeechBubbles.GameBubble(this);
 	
 	this.Name = "";
 	
@@ -132,7 +134,7 @@ doufu.SampleGame.Roles.Base = function()
 	
 	this.Say = function(sMsg)
 	{
-		doufu.Popup.Pop(sMsg, {GameObject: this});
+		bubbles.Popup(sMsg);
 	}
 }
 
@@ -515,11 +517,11 @@ doufu.SampleGame.Maps.LonglyIsland = function(oPlayGround)
 	{
 		if (args.Who.Attributes.GoodGuy == true)
 		{
-			grandma.Say("Grandma: Hi Honey!");
+			grandma.Say("Hi Honey!");
 		}
 		else
 		{
-			grandma.Say("Grandma: ahhhhhh!!!!!!! Leave me alone!");
+			grandma.Say("ahhhhhh!!!!!!! Leave me alone!");
 		}
 		
 		//args.Who.StopMoving();
@@ -785,6 +787,7 @@ doufu.SampleGame.UI.Login = function()
 	var _base_Render = this.OverrideMethod("Render", function()
 	{
 		var self = this;
+		
 		Dialog.alert(
 			"Username: <input id='idUsername' /><br />" + 
 			"Password: <input id='idPassword' /><br />",
@@ -795,14 +798,11 @@ doufu.SampleGame.UI.Login = function()
 				okLabel: "OK",
 				ok: function(win)
 				{
-					var elUser = doufu.Browser.DOM.$s("idUsername");
-					var elPass = doufu.Browser.DOM.$s("idPassword");
+					var elUser = document.getElementById("idUsername");
+					var elPass = document.getElementById("idPassword");
 					
-					var username = elUser.Native().value.trim();
-					var password = elPass.Native().value.trim();
-					
-					elUser.Dispose();
-					elPass.Dispose();
+					var username = elUser.value.trim();
+					var password = elPass.value.trim();
 					
 					if (username != "" &&
 						password != "")
@@ -820,14 +820,4 @@ doufu.SampleGame.UI.Login = function()
 		);
 		
 	});
-}
-
-// TODO: remove this class to doufu project
-doufu.Popup = new function()
-{
-	this.Pop = function(sMsg)
-	{
-		growler.growl(sMsg);
-		log.info(sMsg);
-	}
 }

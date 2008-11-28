@@ -248,6 +248,8 @@ function syncHandler(sender, args)
 		args.ResponseJSON.Message != null &&
 		args.ResponseJSON.Message.trim() != "")
 	{
+		// TODO: add to logger
+		//log.info(godFather.Name + ": " + sMsg);
 		godFather.Say(args.ResponseJSON.Message.trim());
 	}
 	
@@ -257,7 +259,7 @@ function syncLoop()
 	//oPreviousPosi.DeepCopy(godFather);
 	doufu.SampleGame.ServiceMapper.SyncWithCallback({
 		Cube: godFather, 
-		Message: chattingMessages.length > 0?sUsername + ": " + chattingMessages.shift().replace(/[\&|#]*/ig, "").replace(/'/ig,"\\'"):""
+		Message: chattingMessages.length > 0?chattingMessages.shift().replace(/[\&|#]*/ig, "").replace(/'/ig,"\\'"):""
 	}, syncHandler);
 	
 	setTimeout(syncLoop, syncDelay);
@@ -436,9 +438,7 @@ function GlobalDispose()
 //////////////////////
 // Entry point
 // render the ui
-var elmtGlobal = new doufu.Browser.Element(
-			doufu.Browser.BrowserDetect.Browser == doufu.Browser.BrowserDetect.BrowserEnum.Explorer?window: document.body
-			);
+var elmtGlobal = new doufu.Browser.Element(window);
 
 elmtGlobal.OnLoad.Attach(new doufu.Event.CallBack(function(sender, args)
 {
