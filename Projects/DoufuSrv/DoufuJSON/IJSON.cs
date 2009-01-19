@@ -6,5 +6,6 @@ namespace Doufu.JSON
 {
     public interface IJSONObject
     {
+        string ToString();
     }
 }

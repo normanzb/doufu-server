@@ -5,6 +5,10 @@ using System.Text;
 
 namespace Doufu.JSON
 {
+    /// <summary>
+    /// The base object for all Doufu.JSON objects
+    /// </summary>
+    /// <typeparam name="T">Specify the corresponding c# object</typeparam>
     public class Object<T>: IJSONObject
     {
         private Dictionary<string, IJSONObject> _items = new Dictionary<string, IJSONObject>();

@@ -8,9 +8,32 @@ namespace Doufu.JSON.UnitTest
     {
         static void Main(string[] args)
         {
+            /////////////////////////
+            // Stringifier Test
+            /////////////////////////
+
+            // Array tests
+            Doufu.JSON.Object<IJSONObject> testObject = new Doufu.JSON.Object<IJSONObject>();
+            testObject.Items.Add("key1", new Doufu.JSON.Boolean(false));
+            testObject.Items.Add("key2", new Doufu.JSON.Number(333));
+            Doufu.JSON.Array testArray = new Doufu.JSON.Array(new IJSONObject[] { 
+                new Doufu.JSON.Boolean(false), 
+                new Doufu.JSON.Boolean(true),
+                new Doufu.JSON.Number(20),
+                new Doufu.JSON.String("test"),
+                testObject,
+                new Doufu.JSON.Number(0)
+            });
+            Console.WriteLine(testArray.ToString());
+
+
+            /////////////////////////
+            // Parser Test
+            /////////////////////////
+
             // positive tests
 
-           Doufu.JSON.Object<Doufu.JSON.IJSONObject> p_number1 = Doufu.JSON.Helpers.Parse(@"{""test"":23423}");
+            Doufu.JSON.Object<Doufu.JSON.IJSONObject> p_number1 = Doufu.JSON.Helpers.Parse(@"{""test"":23423}");
             Doufu.JSON.Object<Doufu.JSON.IJSONObject> p_number2_blank = Doufu.JSON.Helpers.Parse(@"  {  ""test""   :  23423  }   ");
 
             Doufu.JSON.Object<Doufu.JSON.IJSONObject> p_string1 = Doufu.JSON.Helpers.Parse(@"{""test"":""23423""}");
