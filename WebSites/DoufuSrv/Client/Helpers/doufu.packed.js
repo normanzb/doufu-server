@@ -1432,7 +1432,7 @@ else
 {this.OnSuccess.Invoke({"ResponseJSON":doufu.Http.JSON.Parse(args.ResponseText)});},this));rq.Open('GET',this.Url(),true);rq.Send();}
 if(this.ReadyState<4)
 {this.ReadyState=3;}
-timerCancel=setTimeout(doufu.OOP._callBacker(function(){if(ReadyState==4)
+timerCancel=setTimeout(doufu.OOP._callBacker(function(){if(this.ReadyState==4)
 {sGCallbackFunc=doufu.Http.JSON.CallbackManager.Unregister(this);this.ReadyState=5;this.OnCancel.Invoke();}},this),this.Timeout());}
 this.Dispose=function()
 {this.Close();container=null;script=null
