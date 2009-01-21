@@ -9,7 +9,7 @@ namespace Doufu.JSON
     {
         public Array()
         {
-
+            this.Value = new Collection<IJSONObject>();
         }
 
         public Array(Collection<IJSONObject> value)
@@ -26,6 +26,16 @@ namespace Doufu.JSON
             }
 
             this.Value = cllctValue;
+        }
+
+        // hide items
+        public new Dictionary<string, IJSONObject> Items
+        {
+            get
+            {
+                throw new Exception("Array does not support this method");
+                return null;
+            }
         }
 
         public override string ToString()

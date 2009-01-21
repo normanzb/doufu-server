@@ -15,6 +15,9 @@ public class APIs : System.Web.Services.WebService
     private const string KEY_RETURN = "Return";
     private const string KEY_MOVEMENTS = "Movements";
     private const string KEY_MESSAGE = "Message";
+    private const string KEY_CHATLOG = "ChatLogs";
+    private const string KEY_MESSAGE_USER = "User";
+    private const string KEY_MESSAGE_DATATIME = "DateTime";
     // TODO: make timeout configurable
     private const int TIMEOUT = 60000 * 5;
 
@@ -118,17 +121,32 @@ public class APIs : System.Web.Services.WebService
     [WebMethod(EnableSession = true)]
     public void SyncWithCallback(string sCallbackMethod, string sStatusJSONString)
     {
+        //// adding test data
+        //for (int i = 0; i < 20; i++)
+        //{
+        //    Enums.ChatLog tmp;
+        //    tmp.DateTime = DateTime.Now;
+        //    tmp.Message = i.ToString() + "testsets";
+        //    tmp.Sender = "norm";
+
+        //    AppData.Instance.PublicChannel.Add(tmp);
+        //}
+
 
         Doufu.JSON.Object<Doufu.JSON.IJSONObject> jRoot,jMovement,jStatus,jStatusMovement;
         Doufu.JSON.String jStatusMessage;
+        Doufu.JSON.String jUser;
 
         bool bExited = false;
 
+        // Process data which user posted
         if (sStatusJSONString != null && sStatusJSONString.Trim() != string.Empty)
         {
             jStatus = Doufu.JSON.Helpers.Parse(sStatusJSONString);
 
             jStatusMovement = ((Doufu.JSON.Object<Doufu.JSON.IJSONObject>)(jStatus.Items[KEY_MOVEMENTS]));
+
+            jUser = ((Doufu.JSON.String)jStatus.Items[KEY_MESSAGE_USER]);
 
             // if movement status is not null, then save char pos
             if (jStatusMovement != null)
@@ -138,21 +156,27 @@ public class APIs : System.Web.Services.WebService
                     ((Doufu.JSON.Number)jStatusMovement.Items["Z"]).Value);
             }
 
+            // if the user said something
             if (jStatus.Items.ContainsKey(KEY_MESSAGE))
             {
                 jStatusMessage = ((Doufu.JSON.String)(jStatus.Items[KEY_MESSAGE]));
                 
                 if (jStatusMessage != null)
                 {
-                    AppData.Instance.PublicChannel.Add(
-                        new System.Collections.Generic.KeyValuePair<DateTime,string>(DateTime.Now, jStatusMessage.Value)
-                        );
+                    Enums.ChatLog chatLog = new Enums.ChatLog();
+                    chatLog.DateTime = DateTime.Now;
+                    chatLog.Message = jStatusMessage.Value;
+                    chatLog.Sender = jUser.Value;
+
+                    AppData.Instance.PublicChannel.Add(chatLog);
                 }
             }
         }
 
+        // Process and send data to user.
         while (!bExited)
         {
+            DateTime userLastActivity = AppData.Instance.UserLastActivity;
             jRoot = new Doufu.JSON.Object<Doufu.JSON.IJSONObject>();
             jMovement = new Doufu.JSON.Object<Doufu.JSON.IJSONObject>();
 
@@ -172,22 +196,28 @@ public class APIs : System.Web.Services.WebService
             // add message if has
             if (AppData.Instance.PublicChannel.Count > 0)
             {
+                Doufu.JSON.Array chatLogs = new Doufu.JSON.Array();
+
                 for (int i = 0; i < AppData.Instance.PublicChannel.Count; i++)
                 {
-                    if (AppData.Instance.PublicChannel[i].Key > AppData.Instance.UserLastActivity)
+                    if (AppData.Instance.PublicChannel[i].DateTime > userLastActivity)
                     {
-                        jRoot.Items.Add(KEY_MESSAGE, new Doufu.JSON.String(AppData.Instance.PublicChannel[i].Value));
-                        break;
+                        Doufu.JSON.Object<Doufu.JSON.IJSONObject> chatLog = new Doufu.JSON.Object<Doufu.JSON.IJSONObject>();
+                        chatLog.Items.Add(KEY_MESSAGE_USER, new Doufu.JSON.String(AppData.Instance.PublicChannel[i].Sender));
+                        chatLog.Items.Add(KEY_MESSAGE_DATATIME,new Doufu.JSON.String(AppData.Instance.PublicChannel[i].DateTime.ToUniversalTime().ToString("o")));
+                        chatLog.Items.Add(KEY_MESSAGE, new Doufu.JSON.String(AppData.Instance.PublicChannel[i].Message));
+                        chatLogs.Value.Add(chatLog);
                     }
                 }
 
-                if (AppData.Instance.PublicChannel.Count > 500)
+                jRoot.Items.Add(KEY_CHATLOG, chatLogs);
+
+                // clear some logs
+                while (AppData.Instance.PublicChannel.Count - 500 > 0)
                 {
-                    for (int i = 0; i < 500; i++)
-                    {
-                        AppData.Instance.PublicChannel.RemoveAt(i);
-                    }
+                    AppData.Instance.PublicChannel.RemoveAt(0);
                 }
+
             }
 
             jRoot.Items.Add(KEY_RETURN, new Doufu.JSON.Boolean(true));
@@ -198,7 +228,7 @@ public class APIs : System.Web.Services.WebService
             // if call back method name is specified
             if (sCallbackMethod != null)
             {
-                jr.RespondComet(jRoot, sCallbackMethod);
+                jr.RespondJSON(jRoot, sCallbackMethod);
 
                 // only single sync if the callback is specified.
                 return;

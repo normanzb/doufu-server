@@ -56,14 +56,21 @@ return bRet;}
 doufu.OOP.Implement=function(oContext,oBaseInterface)
 {new oBaseInterface();if(typeof oBaseInterface.__nsc_OOP_DeclareArray==typeof undefined)
 {throw new Error("doufu.OOP.Implement: "+oBaseInterface+"is not a interface!");}
-for(var i=0;i<oBaseInterface.__nsc_OOP_DeclareArray.length;i++)
-{if(oContext.constructor.toString().indexOf(oBaseInterface.__nsc_OOP_DeclareArray[i])==-1)
-{var currentInstance;var bFound=false;currentInstance=oContext;while(currentInstance.__nsc_OOP_Inherit_Stack!=null)
-{if(currentInstance.__nsc_OOP_Inherit_Stack.Ref.toString().indexOf(oBaseInterface.__nsc_OOP_DeclareArray[i])!=-1)
+var IsDeclared=function(func,sPublicMethodName)
+{var bFound=false;var rePublicMethod=/\s*this\s*\.\s*([A-Za-z0-9_\$]*)\s*=\s*(?:new)?(?:f|F)unction/g;var execResult=rePublicMethod.exec(Function.prototype.toString.call(func))
+if(execResult!=null&&execResult.length>1&&execResult[1].trim()==sPublicMethodName)
+{bFound=true;}
+return bFound;}
+var bFound=false;for(var i=0;i<oBaseInterface.__nsc_OOP_DeclareArray.length;i++)
+{if(!IsDeclared(oContext.constructor,oBaseInterface.__nsc_OOP_DeclareArray[i]))
+{var currentInstance;currentInstance=oContext;while(currentInstance.__nsc_OOP_Inherit_Stack!=null)
+{if(IsDeclared(currentInstance.__nsc_OOP_Inherit_Stack.Ref,oBaseInterface.__nsc_OOP_DeclareArray[i]))
 {bFound=true;break;}
-currentInstance=currentInstance.__nsc_OOP_Inherit_Stack;}
-if(!bFound)
-{throw new Error("doufu.OOP.Implement: Method "+oBaseInterface.__nsc_OOP_DeclareArray[i]+" must be implemented!");}}}
+currentInstance=currentInstance.__nsc_OOP_Inherit_Stack;}}
+else
+{bFound=true;};if(bFound)
+{break;}
+throw new Error("doufu.OOP.Implement: Method "+oBaseInterface.__nsc_OOP_DeclareArray[i]+" must be implemented!");}
 if(typeof oContext.__nsc_OOP_BaseInterface==typeof undefined)
 {oContext.__nsc_OOP_BaseInterface=new Array();}
 oContext.__nsc_OOP_BaseInterface.push(oBaseInterface);}
@@ -100,8 +107,10 @@ doufu.OOP._baseInterfaceFunctions=function(__nsc_OOP_baseInterfaceFunc_oContext)
 {return doufu.OOP.Declare(sMethodName,__nsc_OOP_baseInterfaceFunc_oContext);}}
 doufu.OOP._inheritance=function()
 {this.Ref=null;this.__nsc_OOP_Inherit_Stack=null;}
-$c=doufu.OOP.Class;$i=doufu.OOP.Interface;doufu.System=new Object();doufu.System.Hacks={};doufu.System.Hacks.Array=new function()
-{[].indexOf||(Array.prototype.indexOf=function(v){for(var i=this.length;i--&&this[i]!==v;);return i;});}
+$c=doufu.OOP.Class;$i=doufu.OOP.Interface;doufu.System=new Object();doufu.System.Hacks={};doufu.System.Hacks.__isType=function(testObject,typeName)
+{return Object.prototype.toString.call(testObject).toLowerCase()==='[object '+typeName.toLowerCase()+']';}
+doufu.System.Hacks.Array=new function()
+{[].indexOf||(Array.prototype.indexOf=function(v){for(var i=this.length;i--&&this[i]!==v;);return i;});Array.isArray||(Array.isArray=function(testObject){return doufu.System.Hacks.__isType(testObject,"Array");});}
 doufu.System.Hacks.Date=new function()
 {Date.prototype.addDay||(Date.prototype.addDay=function(iNum)
 {this.setTime(this.getTime()+1000*60*60*24*iNum);});Date.prototype.addHour||(Date.prototype.addHour=function(iNum)
@@ -110,7 +119,29 @@ doufu.System.Hacks.Date=new function()
 {this.setTime(this.getTime()+1000*iNum);});}
 doufu.System.Hacks.String=new function()
 {String.prototype.trim||(String.prototype.trim=function()
-{return this.replace(/(^\s*)|(\s*$)/g,"");});}
+{return this.replace(/(^\s*)|(\s*$)/g,"");});String.format||(String.format=function(text)
+{if(arguments.length<=1)
+{return text;}
+var tokenCount=arguments.length-2;for(var token=0;token<=tokenCount;token++)
+{text=text.replace(new RegExp("\\{"+token+"\\}","gi"),arguments[token+1]);}
+return text;});String.isString||(String.isString=function(testObject){return doufu.System.Hacks.__isType(testObject,"String");});String.empty||(String.empty="");}
+doufu.System.Hacks.Function=new function()
+{Function.empty||(Function.empty=function(){});}
+doufu.System.Hacks.Error=new function()
+{Error.prototype.stackTrace||(Error.prototype.getStackTrace=function()
+{var callstack=[];var isCallstackPopulated=false;if(this.stack){var lines=this.stack.split("\n");for(var i=0,len=lines.length;i<len;i++)
+{if(lines[i].match(/^\s*[A-Za-z0-9\-_\$]+\(/))
+{callstack.push(lines[i]);}}
+callstack.shift();isCallstackPopulated=true;}
+else if(window.opera&&this.message)
+{var lines=this.message.split("\n");for(var i=0,len=lines.length;i<len;i++)
+{if(lines[i].match(/^\s*[A-Za-z0-9\-_\$]+\(/))
+{var entry=lines[i];if(lines[i+1])
+{entry+=" at "+lines[i+1];i++;}
+callstack.push(entry);}}
+callstack.shift();isCallstackPopulated=true;}
+if(!isCallstackPopulated){var currentFunction=arguments.callee.caller;while(currentFunction){var fn=currentFunction.toString();var fname=fn.substring(fn.indexOf("function")+8,fn.indexOf("("))||"anonymous";callstack.push(fname);currentFunction=currentFunction.caller;}}
+return callstack.join("\n\n");});}
 doufu.System.Constants=new Object();doufu.System.Constants.TYPE_UNDEFINED=typeof undefined;$Undefined=doufu.System.Constants.TYPE_UNDEFINED;doufu.System.Logger={};doufu.System.Logger.Adapters={};doufu.System.Logger.Adapters.Adaptable=function()
 {doufu.OOP.Class(this);this.NewProperty("IsAvailable");this.IsAvailable.Get=function()
 {return typeof Logger==doufu.System.Constants.TYPE_UNDEFINED?false:true;};this.Debug=function(sMessage)
@@ -222,14 +253,18 @@ doufu.System.APIs.GetIsNullMacro=function(sObjName)
 {return"(function(){if (typeof "+sObjName+" == doufu.System.Constants.TYPE_UNDEFINED || "+sObjName+" == null){return true;}})();";}
 doufu.System.APIs.Clone=function(obj,level){var seenObjects=[];var mappingArray=[];var f=function(simpleObject,currentLevel){if(simpleObject==null)
 {return null;}
-var indexOf=seenObjects.indexOf(simpleObject);if(indexOf==-1){switch((typeof simpleObject).toLowerCase()){case'object':seenObjects.push(simpleObject);var newObject={};mappingArray.push(newObject);for(var p in simpleObject)
+var indexOf=seenObjects.indexOf(simpleObject);if(indexOf==-1){if((typeof simpleObject).toLowerCase()=="object"&&!Array.isArray(simpleObject)){seenObjects.push(simpleObject);var newObject={};mappingArray.push(newObject);for(var p in simpleObject)
 {if(p!=null)
 {if(currentLevel>0)
 {newObject[p]=f(simpleObject[p],currentLevel-1);}
 else
 {newObject[p]=simpleObject[p];}}}
-newObject.constructor=simpleObject.constructor;return newObject;case'array':seenObjects.push(simpleObject);var newArray=[];mappingArray.push(newArray);for(var i=0,len=simpleObject.length;i<len;i++)
-newArray.push(f(simpleObject[i]));return newArray;default:return simpleObject;}}else{return mappingArray[indexOf];}};return f(obj,level==null?0:level);}
+newObject.constructor=simpleObject.constructor;return newObject;}
+else if(Array.isArray(simpleObject))
+{seenObjects.push(simpleObject);var newArray=[];mappingArray.push(newArray);for(var i=0,len=simpleObject.length;i<len;i++)
+newArray.push(f(simpleObject[i]));return newArray;}
+else
+{return simpleObject;}}else{return mappingArray[indexOf];}};return f(obj,level==null?0:level);}
 doufu.System.APIs.NumberOfType=function(type)
 {var iRetCount=0;for(var i=1;i<arguments.length;i++)
 {if(arguments[i].InstanceOf(type))
@@ -247,6 +282,17 @@ doufu.System.Convert.ToInt=function(obj)
 else
 {iRet=obj*1}
 return iRet;}
+doufu.Helpers={};doufu.Helpers.Path=function(sPath)
+{doufu.OOP.Class(this);var _fileName;this.NewProperty("FileName");this.FileName.Get=function()
+{return _fileName;}
+var _extension;this.NewProperty("Extension");this.Extension.Get=function()
+{return _extension;}
+this.NewProperty("FullName");this.FullName.Get=function()
+{return this.FileName()+"."+this.Extension();}
+var _path;this.NewProperty("Path");this.Path.Get=function()
+{return _path;}
+this.Ctor=function()
+{_path=sPath;_path=_path.replace(/\//g,"\\");var splitterIndex=_path.lastIndexOf(".");var pathSplitterIndex=_path.lastIndexOf("\\");_extension=_path.substr(splitterIndex+1,_path.length-splitterIndex-1);_fileName=_path.substr(pathSplitterIndex+1,splitterIndex-pathSplitterIndex-1);};this.Ctor();}
 doufu.DesignPattern={};doufu.DesignPattern.Attachable=function(type)
 {doufu.OOP.Class(this);var _collection=new doufu.CustomTypes.Collection(type);this.NewProperty("InnerCollection");this.InnerCollection.Get=function()
 {return _collection;}
@@ -390,7 +436,7 @@ this.NewProperty("Native");this.Native.Get=function()
 {return _native;}
 this.NewProperty("TagName");this.TagName.Get=function()
 {return this.Native().tagName;}
-var _onkeydown;this.OnKeyDown=new doufu.Event.EventHandler(this);var _onkeyup;this.OnKeyUp=new doufu.Event.EventHandler(this);var _onfocus;this.OnFocus=new doufu.Event.EventHandler(this);var _onblur;this.OnBlur=new doufu.Event.EventHandler(this);var _onload;this.OnLoad=new doufu.Event.EventHandler(this);this.AppendChild=function(elmtAppend)
+var _onkeydown;this.OnKeyDown=new doufu.Event.EventHandler(this);var _onkeyup;this.OnKeyUp=new doufu.Event.EventHandler(this);var _onfocus;this.OnFocus=new doufu.Event.EventHandler(this);var _onblur;this.OnBlur=new doufu.Event.EventHandler(this);var _onload;this.OnLoad=new doufu.Event.EventHandler(this);var _onclick;this.OnClick=new doufu.Event.EventHandler(this);var _onchange;this.OnChange=new doufu.Event.EventHandler(this);this.AppendChild=function(elmtAppend)
 {var elmtActual=elmtAppend;if(typeof elmtAppend.InstanceOf!=$Undefined&&elmtAppend.InstanceOf(doufu.Browser.Element))
 {elmtActual=elmtAppend.Native();}
 return _native.appendChild(elmtActual);}
@@ -463,16 +509,16 @@ else
 {doufu.Browser.Helpers.DetachEvent(_native,"blur",_onblur);}
 doufu.Browser.Helpers.DetachEvent(_native,"focus",_onfocus);_native=null;}
 this.Ctor=function()
-{if((typeof element).toLowerCase()=="string")
-{_native=doufu.Browser.DOM.Select(element);}
+{if(String.isString(element))
+{_native=doufu.Browser.DOM.QuickSelect(element);}
 else
 {_native=element;}
 if(_native==null)
-{throw doufu.Exception("doufu.Browser.Element::Ctor() - Specified element is null.");}
+{throw doufu.System.Exception("doufu.Browser.Element::Ctor() - Specified element is null.");}
 var bufferElmt=doufu.Browser.Element._elementBuffer.GetBufferElement(_native);if(bufferElmt!=null)
 {return bufferElmt;}
 else
-{_onkeydown=nativeEventArgProcessor(this.OnKeyDown.Invoke);doufu.Browser.Helpers.AttachEvent(_native,"keydown",_onkeydown);_onkeyup=nativeEventArgProcessor(this.OnKeyUp.Invoke);doufu.Browser.Helpers.AttachEvent(_native,"keyup",_onkeyup);_onload=nativeEventArgProcessor(this.OnLoad.Invoke);doufu.Browser.Helpers.AttachEvent(_native,"load",_onload);if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer&&(_native==window||_native==document||_native==document.body))
+{_onkeydown=nativeEventArgProcessor(this.OnKeyDown.Invoke);doufu.Browser.Helpers.AttachEvent(_native,"keydown",_onkeydown);_onkeyup=nativeEventArgProcessor(this.OnKeyUp.Invoke);doufu.Browser.Helpers.AttachEvent(_native,"keyup",_onkeyup);_onload=nativeEventArgProcessor(this.OnLoad.Invoke);doufu.Browser.Helpers.AttachEvent(_native,"load",_onload);_onclick=nativeEventArgProcessor(this.OnClick.Invoke);doufu.Browser.Helpers.AttachEvent(_native,"click",_onclick);_onchange=nativeEventArgProcessor(this.OnChange.Invoke);doufu.Browser.Helpers.AttachEvent(_native,"change",_onchange);if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer&&(_native==window||_native==document||_native==document.body))
 {var self=this;_onblur=nativeEventArgProcessor(function(e)
 {if(typeof self.__activeElement==doufu.System.Constants.TYPE_UNDEFINED||self.__activeElement!=document.activeElement)
 {self.__activeElement=document.activeElement}
@@ -866,8 +912,8 @@ this.RemoveObject=function(obj)
 {linkedDisplayMgr.RemoveObject(obj.LinkedDisplayObject());_gameObjects.Remove(obj);}
 this._base_RenderRefer=this.Render.Reference;this.Render.Reference=function(oSender,oEvent)
 {this.ImageOffset.X=this.Camera().X;this.ImageOffset.Y=this.Camera().Y;for(var i=0;i<_gameObjects.Length();i++)
-{displayBufferOffset.Width=_gameObjects.InnerArray()[i].Width;displayBufferOffset.Height=_gameObjects.InnerArray()[i].Height;displayBufferOffset.X=_gameObjects.InnerArray()[i].X;displayBufferOffset.Y=doufu.Game.PlayGround.Helpers.RealYToScreenY(_gameObjects.InnerArray()[i].Y,true);if(doufu.Game.Helpers.IsCollided(displayBufferOffset,this.Camera()))
-{_gameObjects.InnerArray()[i].LinkedDisplayObject().X=displayBufferOffset.X-this.Camera().X;_gameObjects.InnerArray()[i].LinkedDisplayObject().Y=Math.round(displayBufferOffset.Y-this.Camera().Y);_gameObjects.InnerArray()[i].LinkedDisplayObject().Z=Math.round((_gameObjects.InnerArray()[i].Z+1)*4000+_gameObjects.InnerArray()[i].LinkedDisplayObject().Y);_gameObjects.InnerArray()[i].LinkedDisplayObject().Width=_gameObjects.InnerArray()[i].Width;_gameObjects.InnerArray()[i].LinkedDisplayObject().Height=_gameObjects.InnerArray()[i].Height;_gameObjects.InnerArray()[i].LinkedDisplayObject().ImageOffset=_gameObjects.InnerArray()[i].ImageOffset;_gameObjects.InnerArray()[i].LinkedDisplayObject().ImagePath=_gameObjects.InnerArray()[i].ImagePath;if(_gameObjects.InnerArray()[i].LinkedDisplayObject().IsInView==false)
+{displayBufferOffset.Width=_gameObjects.InnerArray()[i].Width;displayBufferOffset.Height=_gameObjects.InnerArray()[i].Height;displayBufferOffset.X=_gameObjects.InnerArray()[i].X;displayBufferOffset.Y=doufu.Game.PlayGround.Helpers.RealYToScreenY(_gameObjects.InnerArray()[i].LocationY(),true)-_gameObjects.InnerArray()[i].StandingOffset.Y;if(doufu.Game.Helpers.IsCollided(displayBufferOffset,this.Camera()))
+{_gameObjects.InnerArray()[i].LinkedDisplayObject().X=displayBufferOffset.X-this.Camera().X;_gameObjects.InnerArray()[i].LinkedDisplayObject().Y=Math.round(displayBufferOffset.Y-this.Camera().Y);_gameObjects.InnerArray()[i].LinkedDisplayObject().Z=Math.round((_gameObjects.InnerArray()[i].Z+1)*4000+_gameObjects.InnerArray()[i].LocationY());_gameObjects.InnerArray()[i].LinkedDisplayObject().Width=_gameObjects.InnerArray()[i].Width;_gameObjects.InnerArray()[i].LinkedDisplayObject().Height=_gameObjects.InnerArray()[i].Height;_gameObjects.InnerArray()[i].LinkedDisplayObject().ImageOffset=_gameObjects.InnerArray()[i].ImageOffset;_gameObjects.InnerArray()[i].LinkedDisplayObject().ImagePath=_gameObjects.InnerArray()[i].ImagePath;if(_gameObjects.InnerArray()[i].LinkedDisplayObject().IsInView==false)
 {linkedDisplayMgr.InsertObject(_gameObjects.InnerArray()[i].LinkedDisplayObject());}}
 else
 {if(_gameObjects.InnerArray()[i].LinkedDisplayObject().IsInView==true)
@@ -885,6 +931,8 @@ var oCndtAccuracy={};oCndtAccuracy[true]=function()
 oCndtAccuracy[false]=function()
 {return Math.round(iRealY/1.5);}
 return oCndtAccuracy[bAccuracy]();}
+doufu.Game.PlayGround.Helpers.ScreenYToRealY=function(iScreenY)
+{return iScreenY*1.5;}
 doufu.Game.PlayGround.Camera=function()
 {doufu.OOP.Class(this);this.Inherit(doufu.Display.Drawing.Rectangle);var skipFrameCount=0;var callbackOffsetCaculation=new doufu.Event.CallBack(function()
 {doufu.System.Logger.Verbose("doufu.Game.PlayGround.Camera::callbackOffsetCaculation(): Invoked.");if(this.IsTracing)
@@ -947,7 +995,11 @@ this.RefToGameObj=oGameObj;}
 this.Ctor();}
 doufu.Game.Animation.Info=function()
 {doufu.OOP.Class(this);this.Column;this.Row;this.FrameNumber;this.RepeatNumber;this.FrameSkip=0;this.PlayReboundly=false;}
-doufu.Game.BaseObject=function(){doufu.OOP.Class(this);this.Inherit(doufu.Display.Drawing.Cube);this.Inherit(doufu.System.Handle.Handlable);this.ImageOffset=new doufu.Display.Drawing.Point();this.FollowerOffset=new doufu.Display.Drawing.Point();this.ImagePath=new String();this.Animation=new doufu.Game.Animation(this);var _linkedDisplayObject=new doufu.Display.BaseObject();this.NewProperty("LinkedDisplayObject");this.LinkedDisplayObject.Get=function()
+doufu.Game.BaseObject=function(){doufu.OOP.Class(this);this.Inherit(doufu.Display.Drawing.Cube);this.Inherit(doufu.System.Handle.Handlable);this.ImageOffset=new doufu.Display.Drawing.Point();this.StandingOffset=new doufu.Display.Drawing.Point();this.NewProperty("LocationX");this.LocationX.Get=function()
+{return this.X+this.StandingOffset.X;}
+this.NewProperty("LocationY");this.LocationY.Get=function()
+{return this.Y+this.StandingOffset.Y;}
+this.FollowerOffset=new doufu.Display.Drawing.Point();this.ImagePath=new String();this.Animation=new doufu.Game.Animation(this);var _linkedDisplayObject=new doufu.Display.BaseObject();this.NewProperty("LinkedDisplayObject");this.LinkedDisplayObject.Get=function()
 {return _linkedDisplayObject;}
 this.LinkedDisplayObject.Set=function(value)
 {_linkedDisplayObject=value;}
@@ -1162,8 +1214,6 @@ this.BackgroundImagePath.Set=function(value)
 this.Width;this.Height;this.Sharps=new doufu.CustomTypes.Collection(doufu.Display.Drawing.Polygon);this.UsePointCollision=true;var _camera=new doufu.Game.PlayGround.Camera();this.NewProperty("Camera");this.Camera.Get=function()
 {return _camera;}
 this.InitSprites=new doufu.CustomTypes.Collection(doufu.Game.Sprites.Sprite);this.ConfirmMovable=function(obj)
-{for(var i=0;i<this.LinkedPlayGround.GameObjects().Length();i++)
-{if(this.LinkedPlayGround.GameObjects().Items(i).InstanceOf(doufu.Game.Sprites.Sprite)&&this.LinkedPlayGround.GameObjects().Items(i).Sharp!=null)
 {if(obj.Sharp==this.Sharp)
 {return true;}
 var tmpColideDrawable1,tmpColideDrawable2;if(obj.Sharp.InstanceOf(doufu.Display.Drawing.Rectangle))
@@ -1179,7 +1229,9 @@ if(this.Sharps.Length()>0)
 {return false;}}
 else if(doufu.Game.Helpers.IsCollided(tmpColideDrawable1,this.Sharps.Items(k),obj.Direction))
 {return false;}}}
-if(obj.Sharp!=this.LinkedPlayGround.GameObjects().Items(i).Sharp)
+for(var i=0;i<this.LinkedPlayGround.GameObjects().Length();i++)
+{if(this.LinkedPlayGround.GameObjects().Items(i).InstanceOf(doufu.Game.Sprites.Sprite)&&this.LinkedPlayGround.GameObjects().Items(i).Sharp!=null)
+{if(obj.Sharp!=this.LinkedPlayGround.GameObjects().Items(i).Sharp)
 {tmpCube.DeepCopy(this.LinkedPlayGround.GameObjects().Items(i));if(this.LinkedPlayGround.GameObjects().Items(i).Sharp.InstanceOf(doufu.Display.Drawing.Rectangle))
 {tmpRectangle2.DeepCopy(this.LinkedPlayGround.GameObjects().Items(i).Sharp);tmpRectangle2.X+=tmpCube.X;tmpRectangle2.Y+=tmpCube.Y;tmpColideDrawable2=tmpRectangle2;}
 else if(this.LinkedPlayGround.GameObjects().Items(i).Sharp.InstanceOf(doufu.Display.Drawing.Polygon))
@@ -1205,7 +1257,7 @@ this.Ctor=function()
 this.LinkedPlayGround=oPlayGround;this.LinkedPlayGround.CurrentMap(this);}
 this.Ctor();}
 doufu.SpeechBubbles={};doufu.SpeechBubbles.BaseBubble=function()
-{doufu.OOP.Class(this);this.Inherit(doufu.Display.Drawing.Rectangle);this.Style="default";this.StickyTime=7*1000;this.StickyFactor=200;this.BaseTextLength=50;this.MaxWidth=100;this.NewProperty("Text");this.NewProperty("Width");this.NewProperty("Height");this.GetClassName=function(subfix)
+{doufu.OOP.Class(this);this.Inherit(doufu.Display.Drawing.Rectangle);this.Style="default";this.StickyTime=7*1000;this.StickyFactor=200;this.BaseTextLength=50;this.MaxWidth=110;this.MinWidth=55;this.NewProperty("Text");this.NewProperty("Width");this.NewProperty("Height");this.GetClassName=function(subfix)
 {var mainPrefix="doufu_SpeechBubbles_";return mainPrefix+this.Style+"_"+subfix;}
 this.Popup=function(x,y,msg,style)
 {}
@@ -1216,17 +1268,17 @@ this.Hide=function()
 doufu.SpeechBubbles.GameBubble=function(goContainer)
 {doufu.OOP.Class(this);var goBorder=new doufu.Game.BaseObject();var goBorderElmt=goBorder.LinkedDisplayObject().HTMLElement();this.Inherit(doufu.SpeechBubbles.BrowserBubble,[goBorderElmt]);var _base_Popup=this.OverrideMethod("Popup",function(x,y,msg)
 {goBorder.IsFollower=false;goBorder.X=x;goBorder.Y=y;_base_Popup(0,0,msg);});this.OverloadMethod("Popup",function(msg)
-{goBorder.IsFollower=true;goBorder.FollowerOffset.X=goContainer.Width/2;goBorder.FollowerOffset.Y=goContainer.Height/5;this.Popup(0,0,msg);});this.Ctor=function()
+{goBorder.IsFollower=true;goBorder.FollowerOffset.X=goContainer.Width/2;goBorder.FollowerOffset.Y=-10;this.Popup(0,0,msg);});this.Ctor=function()
 {goBorder.Z=2;goContainer.Children.Add(goBorder);}
 this.Ctor();}
 doufu.SpeechBubbles.BrowserBubble=function(container)
-{doufu.OOP.Class(this);this.Inherit(doufu.SpeechBubbles.BaseBubble);var self=this;var elmtContainer;var elmtBorder;var elmtLeftCorner;var elmtRightCorner;var elmtMessageBody;var elmtTipHandler;var stickyTimer;var idDisplaying=false;var firstShow=true;this.NewProperty("HTMLBorder");this.HTMLBorder.Get=function()
+{doufu.OOP.Class(this);this.Inherit(doufu.SpeechBubbles.BaseBubble);var self=this;var elmtContainer;var elmtBorder;var elmtLeftCorner;var elmtRightCorner;var elmtMessageBody;var elmtTextBody;var elmtTipHandler;var stickyTimer;var idDisplaying=false;var firstShow=true;this.NewProperty("HTMLBorder");this.HTMLBorder.Get=function()
 {return elmtBorder.Native();}
 var _base_GetClassName=this.OverrideMethod("GetClassName",function(subfix)
 {var privatePrefix="doufu_SpeechBubbles_BrowserBubble_";return _base_GetClassName(subfix)+" "+privatePrefix+this.Style+"_"+subfix;});this.Text.Get=function()
-{return elmtMessageBody.Native().innerHTML;}
+{return elmtTextBody.Native().innerHTML;}
 this.Text.Set=function(value)
-{elmtMessageBody.Native().innerHTML=value;}
+{elmtTextBody.Native().innerHTML=value;}
 this.Width.Get=function()
 {return elmtBorder.Native().clientWidth;}
 this.Width.Set=function(value)
@@ -1245,14 +1297,16 @@ stickyTimer=setInterval(this.Hide,stickyTime);idDisplaying=true;}
 _base_Popup(x,y,msg);});var _base_Show=this.OverrideMethod("Show",function()
 {elmtBorder.NoWrap(true);elmtBorder.Native().style.display="block";elmtBorder.Native().style.width="auto";if(firstShow)
 {elmtBorder.Opacity(10);firstShow=false;}
-if(elmtBorder.Native().offsetWidth>this.MaxWidth)
+var actualWidth=elmtBorder.Native().offsetWidth;if(actualWidth>this.MaxWidth)
 {elmtBorder.NoWrap(false);elmtBorder.Native().style.width=this.MaxWidth+"px";}
+else if(actualWidth<this.MinWidth)
+{elmtBorder.NoWrap(false);elmtBorder.Native().style.width=this.MinWidth+"px";}
 else
 {elmtBorder.Native().style.width="auto";}
 elmtBorder.Native().style.left=(elmtBorder.Native().offsetLeft-elmtTipHandler.Native().offsetLeft-Math.floor(elmtTipHandler.Native().offsetWidth/2))+"px";elmtBorder.Native().style.top=(elmtBorder.Native().offsetTop-elmtBorder.Native().offsetHeight)+"px";elmtBorder.Effects.FadeIn(3);});var _base_Hide=this.OverrideMethod("Hide",function()
 {clearInterval(stickyTimer);elmtBorder.Effects.FadeOut(2);});this.Ctor=function()
 {elmtContainer=new doufu.Browser.Element(container);elmtBorder=doufu.Browser.DOM.CreateElement("div");elmtBorder.Native().className=this.GetClassName("border");elmtBorder.Native().style.position="absolute";elmtBorder.Effects.OnFadeOut.Attach(new doufu.Event.CallBack(function()
-{elmtBorder.Native().style.display="none";},this));elmtLeftCorner=doufu.Browser.DOM.CreateElement("div");elmtLeftCorner.Native().className=this.GetClassName("leftCorner");elmtRightCorner=doufu.Browser.DOM.CreateElement("div");elmtRightCorner.Native().className=this.GetClassName("rightCorner");elmtMessageBody=doufu.Browser.DOM.CreateElement("div");elmtMessageBody.Native().className=this.GetClassName("messageBody");elmtTipHandler=doufu.Browser.DOM.CreateElement("div");elmtTipHandler.Native().className=this.GetClassName("tipHandler");elmtBorder.AppendChild(elmtLeftCorner);elmtBorder.AppendChild(elmtMessageBody);elmtBorder.AppendChild(elmtRightCorner);elmtBorder.AppendChild(elmtTipHandler);elmtBorder.Native().style.display="none";this.Hide();elmtContainer.AppendChild(elmtBorder);}
+{elmtBorder.Native().style.display="none";},this));elmtLeftCorner=doufu.Browser.DOM.CreateElement("div");elmtLeftCorner.Native().className=this.GetClassName("leftCorner");elmtRightCorner=doufu.Browser.DOM.CreateElement("div");elmtRightCorner.Native().className=this.GetClassName("rightCorner");elmtMessageBody=doufu.Browser.DOM.CreateElement("div");elmtMessageBody.Native().className=this.GetClassName("messageBody");elmtTextBody=doufu.Browser.DOM.CreateElement("div");elmtTextBody.Native().className=this.GetClassName("textBody");elmtTipHandler=doufu.Browser.DOM.CreateElement("div");elmtTipHandler.Native().className=this.GetClassName("tipHandler");elmtMessageBody.AppendChild(elmtTextBody);elmtBorder.AppendChild(elmtLeftCorner);elmtBorder.AppendChild(elmtMessageBody);elmtBorder.AppendChild(elmtRightCorner);elmtBorder.AppendChild(elmtTipHandler);elmtBorder.Native().style.display="none";this.Hide();elmtContainer.AppendChild(elmtBorder);}
 this.Ctor();}
 doufu.Http={}
 doufu.Http.CreateTimeStamp=function()
@@ -1342,19 +1396,23 @@ var _base_Close=this.OverrideMethod("Close",function()
 {bCheckResponse=false;_base_Close.call(this);});var _base_Send=this.OverrideMethod("Send",function()
 {_base_Send.call(this);bCheckResponse=true;checkResponse();});}
 doufu.Http.JSON=function()
-{doufu.OOP.Class(this);this.Inherit(doufu.System.Handle.Handlable);this.Handle=doufu.System.Handle.Generate();var CONTAINER_ID='doufu_Http_JSON_Container';var _url;var _callbackParameterName;var sGCallbackFunc;this.ReadyState=0;this.NewProperty("Url");this.Url.Get=function()
+{doufu.OOP.Class(this);this.Inherit(doufu.System.Handle.Handlable);this.Handle=doufu.System.Handle.Generate();var CONTAINER_ID='doufu_Http_JSON_Container';var _url;var _callbackParameterName;var sGCallbackFunc;var timerCancel;this.ReadyState=0;this.NewProperty("Url");this.Url.Get=function()
 {return _url;}
 this.NewProperty("CallbackParameterName");this.CallbackParameterName.Get=function()
 {return _callbackParameterName;}
 var script;this.NewProperty("ScriptElement");this.ScriptElement.Get=function()
 {return script;}
+var timeout=60*1000;this.NewProperty("Timeout");this.Timeout.Get=function()
+{return timeout;}
+this.Timeout.Set=function(value)
+{timeout=value;}
 var responseJSON;this.NewProperty("ResponseJSON");this.ResponseJSON.Get=function()
 {return responseJSON;}
 this.ResponseJSON.Set=function(value)
 {responseJSON=value;}
 this.NewProperty("ResponseText");this.ResponseText.Get=function()
 {return this.ScriptElement().innerHTML;}
-this.OnSuccess=new doufu.Event.EventHandler(this);this.Open=function(sUrl,sCallbackParameterName)
+this.OnSuccess=new doufu.Event.EventHandler(this);this.OnCancel=new doufu.Event.EventHandler(this);this.Open=function(sUrl,sCallbackParameterName)
 {if(this.ReadyState==0||this.ReadyState==5)
 {_url=sUrl;_callbackParameterName=sCallbackParameterName;sGCallbackFunc=doufu.Http.JSON.CallbackManager.Register(this);this.ReadyState=1;}
 else
@@ -1373,7 +1431,9 @@ else
 {var rq=new doufu.Http.Request();rq.OnSuccess.Attach(new doufu.Event.CallBack(function(sender,args)
 {this.OnSuccess.Invoke({"ResponseJSON":doufu.Http.JSON.Parse(args.ResponseText)});},this));rq.Open('GET',this.Url(),true);rq.Send();}
 if(this.ReadyState<4)
-{this.ReadyState=3;}}
+{this.ReadyState=3;}
+timerCancel=setTimeout(doufu.OOP._callBacker(function(){if(ReadyState==4)
+{sGCallbackFunc=doufu.Http.JSON.CallbackManager.Unregister(this);this.ReadyState=5;this.OnCancel.Invoke();}},this),this.Timeout());}
 this.Dispose=function()
 {this.Close();container=null;script=null
 delete container;delete script}
@@ -1393,7 +1453,7 @@ else
 this.ReadyState=5;}
 this.Ctor=function()
 {this.OnSuccess.Attach(new doufu.Event.CallBack(function()
-{if(this.ReadyState!=5)
+{clearTimeout(timerCancel);if(this.ReadyState!=5)
 {this.ReadyState=4;}},this));}
 this.Ctor();};doufu.Http.JSON.Parse=function(sJSONStr)
 {eval("var tmpobj = "+sJSONStr);return tmpobj;}
@@ -1402,11 +1462,12 @@ doufu.Http.JSON.CallbackManager=new function()
 {if(!oJSONRequst.InstanceOf(doufu.Http.JSON))
 {throw doufu.System.Exception("doufu.Http.JSON.CallbackManager::Register() - The object specified was not a json request object.");}
 this.Callbacks[oJSONRequst.Handle.ID]=function(oJData)
-{oJSONRequst.OnSuccess.Invoke({"ResponseJSON":oJData,"ResponseText":oJSONRequst.ResponseText()});oJSONRequst.ResponseJSON(oJData);}
+{if(oJSONRequst.ReadyState==2||oJSONRequst.ReadyState==3)
+{oJSONRequst.OnSuccess.Invoke({"ResponseJSON":oJData,"ResponseText":oJSONRequst.ResponseText()});oJSONRequst.ResponseJSON(oJData);}}
 return"doufu.Http.JSON.CallbackManager.Callbacks["+oJSONRequst.Handle.ID+"]";}
 this.Unregister=function(oJSONRequst)
 {if(!oJSONRequst.InstanceOf(doufu.Http.JSON))
-{throw doufu.System.Exception("doufu.Http.JSON.CallbackManager::Register() - The object specified was not a json request object.");}
+{throw doufu.System.Exception("doufu.Http.JSON.CallbackManager::Unregister() - The object specified was not a json request object.");}
 this.Callbacks[oJSONRequst.Handle.ID]=null;}}
 doufu.Keyboard={};doufu.Keyboard.Key=function(sKey)
 {doufu.OOP.Class(this);this.IsKeyDown=false;this.OnKeyDown=new doufu.Event.EventHandler(this);this.OnKeyUp=new doufu.Event.EventHandler(this);this.Dispose=function()

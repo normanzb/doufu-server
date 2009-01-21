@@ -111,7 +111,7 @@ public class AppData
         }
     }
 
-    public Collection<KeyValuePair<DateTime, string>> PublicChannel
+    public Collection<Enums.ChatLog> PublicChannel
     {
         get
         {
@@ -119,10 +119,10 @@ public class AppData
             {
                 if (this.AppState[KEY_CHANNEL_PUBLIC] == null)
                 {
-                    this.AppState[KEY_CHANNEL_PUBLIC] = new Collection<KeyValuePair<DateTime, string>>();
+                    this.AppState[KEY_CHANNEL_PUBLIC] = new Collection<Enums.ChatLog>();
                 }
 
-                return (Collection<KeyValuePair<DateTime, string>>)this.AppState[KEY_CHANNEL_PUBLIC];
+                return (Collection<Enums.ChatLog>)this.AppState[KEY_CHANNEL_PUBLIC];
             }
         }
     }

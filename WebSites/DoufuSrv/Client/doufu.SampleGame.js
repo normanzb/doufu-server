@@ -33,6 +33,14 @@ doufu.SampleGame.Roles.Helpers.SetPolygon = function(fourDirectionSprite)
 	oRect.Y = 28;
 	oRect.Width = 12;
 	oRect.Height = 8;
+	if (fourDirectionSprite.InstanceOf(doufu.SampleGame.Roles.MaskKillerGiant))
+	{
+		oRect.X = 12;
+		oRect.Y = 56;
+		oRect.Width = 24;
+		oRect.Height = 16;
+	}
+
 	
 	fourDirectionSprite.Sharp = oRect;
 }
@@ -151,6 +159,9 @@ doufu.SampleGame.Roles.Grandpa = function()
 	this.Width = 24;
 	this.Height = 32;
 	
+	this.StandingOffset.X = 12;
+	this.StandingOffset.Y = 30;
+	
 	this.ImagePath = CONFIG_CHARS_PATH + "char01.gif";
 	
 	doufu.SampleGame.Roles.Helpers.SetPolygon(this);
@@ -211,6 +222,9 @@ doufu.SampleGame.Roles.Grandma = function()
 	
 	this.Width = 24;
 	this.Height = 32;
+	
+	this.StandingOffset.X = 12;
+	this.StandingOffset.Y = 30;
 	
 	this.ImagePath = CONFIG_CHARS_PATH + "char01.gif";
 	
@@ -274,7 +288,97 @@ doufu.SampleGame.Roles.MaskKiller = function()
 	this.Width = 24;
 	this.Height = 32;
 	
+	this.StandingOffset.X = 12;
+	this.StandingOffset.Y = 30;
+	
 	this.ImagePath = CONFIG_CHARS_PATH + "char03.png";
+	
+	doufu.SampleGame.Roles.Helpers.SetPolygon(this);
+	
+	this.Giantize = function()
+	{
+		this.ImagePath = CONFIG_CHARS_PATH + "char04.png";
+		
+		this.Y = this.Y + this.Height - 64;
+		this.X = this.X + this.Width / 2 - 48 / 2;
+		
+		this.Width = 48;
+		this.Height = 64;
+		
+		this.StandingOffset.X = 24;
+		this.StandingOffset.Y = 60;
+		
+		var oRect = new doufu.Display.Drawing.Rectangle();
+		oRect.X = 12;
+		oRect.Y = 56;
+		oRect.Width = 24;
+		oRect.Height = 16;
+		this.Sharp = oRect;
+		
+		this.Animation.Play(this.AnimationInfos.Init);
+	}
+	
+	this.AnimationInfos.Init = new doufu.Game.Animation.Info();
+	this.AnimationInfos.Init.Row = 2;
+	this.AnimationInfos.Init.Column = 1;
+	this.AnimationInfos.Init.FrameNumber = 1;
+	this.AnimationInfos.Init.RepeatNumber = 1;
+	this.AnimationInfos.Init.FrameSkip = 5;
+	
+	doufu.SampleGame.Roles.Helpers.SetAnimation(this);
+	
+	this.AnimationInfos.MoveRight.Row = 1;
+	this.AnimationInfos.MoveRight.Column = 0;
+	
+	this.AnimationInfos.MoveLeft.Row = 3;
+	this.AnimationInfos.MoveLeft.Column = 0;
+	
+	this.AnimationInfos.MoveUp.Row = 0;
+	this.AnimationInfos.MoveUp.Column = 0;
+	
+	this.AnimationInfos.MoveDown.Row = 2;
+	this.AnimationInfos.MoveDown.Column = 0;
+	
+	this.AnimationInfos.StopRight = new doufu.Game.Animation.Info();
+	this.AnimationInfos.StopRight.Row = 1;
+	this.AnimationInfos.StopRight.Column = 1;
+	this.AnimationInfos.StopRight.FrameNumber = 1;
+	this.AnimationInfos.StopRight.RepeatNumber = 1;
+	
+	this.AnimationInfos.StopLeft = new doufu.Game.Animation.Info();
+	this.AnimationInfos.StopLeft.Row = 3;
+	this.AnimationInfos.StopLeft.Column = 1;
+	this.AnimationInfos.StopLeft.FrameNumber = 1;
+	this.AnimationInfos.StopLeft.RepeatNumber = 1;
+	
+	this.AnimationInfos.StopUp = new doufu.Game.Animation.Info();
+	this.AnimationInfos.StopUp.Row = 0;
+	this.AnimationInfos.StopUp.Column = 1;
+	this.AnimationInfos.StopUp.FrameNumber = 1;
+	this.AnimationInfos.StopUp.RepeatNumber = 1;
+	
+	this.AnimationInfos.StopDown = new doufu.Game.Animation.Info();
+	this.AnimationInfos.StopDown.Row = 2;
+	this.AnimationInfos.StopDown.Column = 1;
+	this.AnimationInfos.StopDown.FrameNumber = 1;
+	this.AnimationInfos.StopDown.RepeatNumber = 1;
+	
+	this.Animation.Play(this.AnimationInfos.Init);
+	
+}
+doufu.SampleGame.Roles.MaskKillerGiant = function()
+{
+	$c(this);
+	
+	this.Inherit(doufu.SampleGame.Roles.Base);
+	
+	this.Width = 48;
+	this.Height = 64;
+	
+	this.StandingOffset.X = 24;
+	this.StandingOffset.Y = 60;
+	
+	this.ImagePath = CONFIG_CHARS_PATH + "char04.png";
 	
 	doufu.SampleGame.Roles.Helpers.SetPolygon(this);
 	
@@ -335,6 +439,9 @@ doufu.SampleGame.Items.Flower = function()
 	
 	this.Width = 23;
 	this.Height = 33;
+	
+	this.StandingOffset.X = 12;
+	this.StandingOffset.Y = 28;
 	
 	this.ImagePath = CONFIG_PLANTS_PATH + "flower01.gif";
 	
@@ -532,7 +639,7 @@ doufu.SampleGame.Maps.LonglyIsland = function(oPlayGround)
 	flower.Y = 443;
 	var c0 = new doufu.SampleGame.Items.GiantCloud();
 	c0.X = 600;
-	c0.Y = 340;
+	c0.Y = 500;
 	c0.Z = 1;
 	c0.StartMoving(new doufu.Game.Direction(48), 99);
 	var c1 = new doufu.SampleGame.Items.BigCloud();

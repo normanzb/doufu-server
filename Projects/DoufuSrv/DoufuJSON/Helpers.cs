@@ -15,7 +15,7 @@ namespace Doufu.JSON
             public JSONResponder()
             {
                 this.Context = System.Web.HttpContext.Current;
-                this.Context.Response.ContentType = "text/plain";
+                this.Context.Response.ContentType = "application/x-javascript";
                 this.Context.Response.Buffer = false;
             }
 
@@ -40,7 +40,27 @@ namespace Doufu.JSON
             /// <param name="oJson"></param>
             public void RespondJSON(Doufu.JSON.IJSONObject oJson)
             {
-                this.Context.Response.Write(oJson.ToString());
+                RespondJSON(oJson, null);
+            }
+
+            /// <summary>
+            /// Using this.Context to respond specified json data
+            /// </summary>
+            /// <param name="oJson"></param>
+            /// <param name="sCallback">Callback function name</param>
+            public void RespondJSON(Doufu.JSON.IJSONObject oJson, string sCallback)
+            {
+                string retJString = string.Empty;
+                if (sCallback == null || sCallback.Trim() == string.Empty)
+                {
+                    retJString = oJson.ToString();
+                }
+                else
+                {
+                    retJString = sCallback + "(" + oJson.ToString() + ");" + "\r\n\r\n";
+                    
+                }
+                this.Context.Response.Write(retJString);
                 this.Context.Response.Flush();
                 this.Context.Response.Close();
             }

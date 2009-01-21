@@ -1,5 +1,6 @@
 .doufu_SpeechBubbles_default_border
 {
+
 }
 .doufu_SpeechBubbles_default_leftCorner
 {
@@ -15,11 +16,16 @@
 	background-color: #fff;
 	color: #000;
 	font-size: 12px;
-	padding-left: 7px;
 	float:left;
-	width:100%;
 	z-index: 15000;
-
+	width:100%;
+}
+.doufu_SpeechBubbles_default_textBody
+{
+	float:left;
+	
+	margin-left:2px;
+	margin-right:2px;
 }
 .doufu_SpeechBubbles_default_tipHandler
 {

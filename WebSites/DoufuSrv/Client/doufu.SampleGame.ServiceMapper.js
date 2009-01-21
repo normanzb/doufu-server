@@ -77,6 +77,8 @@ doufu.SampleGame.ServiceMapper.SyncWithCallback = (function()
 	var rq = new doufu.Http.JSON();
 	var _fSuccess;
 	
+	// set 30 seconds time out
+	rq.Timeout(1000 * 30);
 	rq.OnSuccess.Attach(new doufu.Event.CallBack(function()
 	{
 		_fSuccess.apply(this, arguments);
@@ -93,9 +95,10 @@ doufu.SampleGame.ServiceMapper.SyncWithCallback = (function()
 				oArgs.Message == null ||
 				oArgs.Message.trim() == "")?false: true;
 			
+			var jUser = "'User':'" + oArgs.Cube.Name + "'";
 			var jMovement = "'Movements':{'X':" + oArgs.Cube.X + ",'Y':" + oArgs.Cube.Y + ",'Z':" + oArgs.Cube.Z + "}";
 			var jMessage = "'Message': ' " + oArgs.Message + " '"
-			var jPost = "sStatusJSONString={" + jMovement + (bHasMsg?"," + jMessage:"") + "}";
+			var jPost = "sStatusJSONString={" + jUser + "," + jMovement + (bHasMsg?"," + jMessage:"") + "}";
 			
 			
 			//rq.OnFail.Attach(new doufu.Event.CallBack(fFail, this));

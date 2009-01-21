@@ -27,8 +27,8 @@
 
 ////////////////////
 // Variables
-var scrWidth = 322;
-var scrHeight = 200;
+var scrWidth = 473;
+var scrHeight = 268;
 var reportDelay = 1000;
 var reporting = false;
 var oldReportingCube = new doufu.Display.Drawing.Cube();
@@ -222,7 +222,8 @@ function syncHandler(sender, args)
 		cbTmp.Y = args.ResponseJSON.Movements[spr].Y;
 		cbTmp.Z = args.ResponseJSON.Movements[spr].Z;
 
-		
+		// TODO: refactor sprChars, use the events on playground class.
+		// add a new doufu.Sample.SpriteReferenceHolder class.
 		if (typeof sprChars[spr] == $Undefined)
 		{
 			
@@ -244,13 +245,21 @@ function syncHandler(sender, args)
 	}
 	
 	// handle message
-	if (typeof args.ResponseJSON.Message != $Undefined &&
-		args.ResponseJSON.Message != null &&
-		args.ResponseJSON.Message.trim() != "")
+	if (typeof args.ResponseJSON.ChatLogs != $Undefined &&
+		args.ResponseJSON.ChatLogs != null)
 	{
-		// TODO: add to logger
-		//log.info(godFather.Name + ": " + sMsg);
-		godFather.Say(args.ResponseJSON.Message.trim());
+		var tmpLogs = args.ResponseJSON.ChatLogs;
+		
+		for(var i = 0; i < tmpLogs.length; i ++)
+		{
+			if (tmpLogs[i].Message.trim() != String.empty && sprChars[tmpLogs[i].User] != null)
+			{
+				// TODO: add to logger
+				//log.info(godFather.Name + ": " + sMsg);
+				sprChars[tmpLogs[i].User].Say(tmpLogs[i].Message);
+			}
+		}
+		
 	}
 	
 }
@@ -320,6 +329,7 @@ uiLogin.OnConfirmed.Attach(new doufu.Event.CallBack(function(sender, args)
 {
 	// set current user name
 	sUsername = args.User;
+	godFather.Name = sUsername;
 	
 	sprChars[sUsername] = godFather;
 	
