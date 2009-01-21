@@ -15,6 +15,7 @@ public class APIs : System.Web.Services.WebService
     private const string KEY_RETURN = "Return";
     private const string KEY_MOVEMENTS = "Movements";
     private const string KEY_MESSAGE = "Message";
+    // TODO: make timeout configurable
     private const int TIMEOUT = 60000 * 5;
 
     // json responder
