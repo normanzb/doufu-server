@@ -34,7 +34,6 @@ namespace Doufu.JSON
             get
             {
                 throw new Exception("Array does not support this method");
-                return null;
             }
         }
 
