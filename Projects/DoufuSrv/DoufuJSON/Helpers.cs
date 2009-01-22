@@ -15,7 +15,7 @@ namespace Doufu.JSON
             public JSONResponder()
             {
                 this.Context = System.Web.HttpContext.Current;
-                this.Context.Response.ContentType = "application/x-javascript";
+                this.Context.Response.ContentType = "application/json";
                 this.Context.Response.Buffer = false;
             }
 

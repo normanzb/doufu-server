@@ -1421,19 +1421,20 @@ this.Send=function(data)
 {if(this.ReadyState!=1)
 {throw doufu.System.Exception('doufu.Http.JSON::Send() - Conneciton was not opened.');}
 this.ReadyState=2;if(_callbackParameterName!=null)
-{var container=document.getElementById(CONTAINER_ID)
-if(!container)
+{var container=document.getElementById(CONTAINER_ID);if(!container)
 {container=document.createElement('div');container.setAttribute('id',CONTAINER_ID);document.body.appendChild(container);}
-var tmpUrl=doufu.Http.AddStampToUrl(doufu.Http.AddParameterToUrl(this.Url(),_callbackParameterName,sGCallbackFunc));if(data!=null)
+var tmpUrl=doufu.Http.AddStampToUrl(doufu.Http.AddParameterToUrl(this.Url(),_callbackParameterName,sGCallbackFunc));doufu.System.Logger.Verbose("doufu.Http.JSON::Send(): Actual url is "+tmpUrl);if(data!=null)
 {tmpUrl=tmpUrl+"&"+encodeURI(data);}
-script=document.createElement('script');script.setAttribute("type","text/javascript");script.src=tmpUrl;container.appendChild(script);}
+script=document.createElement('script');script.setAttribute("defer","defer");script.setAttribute("id",CONTAINER_ID+"_script_"+this.Handle.ID)
+script.setAttribute("type","text/javascript");script.setAttribute("charset","utf-8");script.src=tmpUrl;container.appendChild(script);}
 else
 {var rq=new doufu.Http.Request();rq.OnSuccess.Attach(new doufu.Event.CallBack(function(sender,args)
 {this.OnSuccess.Invoke({"ResponseJSON":doufu.Http.JSON.Parse(args.ResponseText)});},this));rq.Open('GET',this.Url(),true);rq.Send();}
 if(this.ReadyState<4)
 {this.ReadyState=3;}
-timerCancel=setTimeout(doufu.OOP._callBacker(function(){if(this.ReadyState==3)
-{sGCallbackFunc=doufu.Http.JSON.CallbackManager.Unregister(this);this.ReadyState=5;this.OnCancel.Invoke();}},this),this.Timeout());}
+if(this.Timeout()>0)
+{timerCancel=setTimeout(doufu.OOP._callBacker(function(){if(this.ReadyState==3)
+{sGCallbackFunc=doufu.Http.JSON.CallbackManager.Unregister(this);this.ReadyState=5;this.OnCancel.Invoke();}},this),this.Timeout());}}
 this.Dispose=function()
 {this.Close();container=null;script=null
 delete container;delete script}
@@ -1441,7 +1442,7 @@ this.Close=function()
 {if(_callbackParameterName!=null)
 {doufu.Http.JSON.CallbackManager.Unregister(this);}
 if(this.ReadyState==2)
-{var self=this;setTimeout(function()
+{var self=this;doufu.System.Logger.Error("doufu.Http.JSON::Close(): ReadyState = 2; Please report this error to homyu.shinn@gmail.com .");setTimeout(function()
 {this.Close.call(self);},500);}
 var container=document.getElementById(CONTAINER_ID);if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer&&doufu.Browser.BrowserDetect.Version<8)
 {var myScript=script;var paramName=_callbackParameterName;setTimeout(function()
@@ -1453,17 +1454,27 @@ else
 this.ReadyState=5;}
 this.Ctor=function()
 {this.OnSuccess.Attach(new doufu.Event.CallBack(function()
-{clearTimeout(timerCancel);if(this.ReadyState!=5)
+{try
+{clearTimeout(timerCancel);}
+catch(ex)
+{doufu.System.Logger.Error("doufu.Http.JSON::Ctor(): Clear timeout error: "+ex.toString()+ex.message);}
+if(this.ReadyState!=5)
 {this.ReadyState=4;}},this));}
 this.Ctor();};doufu.Http.JSON.Parse=function(sJSONStr)
-{eval("var tmpobj = "+sJSONStr);return tmpobj;}
+{var tmpobj=null;if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer&&doufu.Browser.BrowserDetect.Version>=8)
+{tmpobj=JSON.parse(sJSONStr);}
+else
+{eval("tmpobj = "+sJSONStr);}
+return tmpobj;}
 doufu.Http.JSON.CallbackManager=new function()
 {doufu.OOP.Class(this);this.Callbacks={};this.Register=function(oJSONRequst)
 {if(!oJSONRequst.InstanceOf(doufu.Http.JSON))
 {throw doufu.System.Exception("doufu.Http.JSON.CallbackManager::Register() - The object specified was not a json request object.");}
 this.Callbacks[oJSONRequst.Handle.ID]=function(oJData)
 {if(oJSONRequst.ReadyState==2||oJSONRequst.ReadyState==3)
-{oJSONRequst.OnSuccess.Invoke({"ResponseJSON":oJData,"ResponseText":oJSONRequst.ResponseText()});oJSONRequst.ResponseJSON(oJData);}}
+{oJSONRequst.OnSuccess.Invoke({"ResponseJSON":oJData,"ResponseText":oJSONRequst.ResponseText()});oJSONRequst.ResponseJSON(oJData);}
+else
+{doufu.System.Logger.Error(String.format("doufu.Http.JSON.CallbackManager:Register(): request handle id = {0}; ready state = {1}",oJSONRequst.Handle.ID,oJSONRequst.ReadyState));}}
 return"doufu.Http.JSON.CallbackManager.Callbacks["+oJSONRequst.Handle.ID+"]";}
 this.Unregister=function(oJSONRequst)
 {if(!oJSONRequst.InstanceOf(doufu.Http.JSON))

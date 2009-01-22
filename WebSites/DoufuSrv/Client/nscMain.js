@@ -52,7 +52,7 @@ var loopTimeout = 70;
 var sUsername = "";
 
 // main chars
-var godFather = new doufu.SampleGame.Roles.Grandpa();
+var godFather = new doufu.SampleGame.Roles.MaskKiller();
 
 // char array
 var sprChars = {};
@@ -265,11 +265,17 @@ function syncHandler(sender, args)
 }
 function syncLoop()
 {
+	var sMessage = chattingMessages.length > 0?chattingMessages[0].replace(/[\&|#]*/ig, "").replace(/'/ig,"\\'"):"";
 	//oPreviousPosi.DeepCopy(godFather);
-	doufu.SampleGame.ServiceMapper.SyncWithCallback({
+	var bResult = doufu.SampleGame.ServiceMapper.SyncWithCallback({
 		Cube: godFather, 
-		Message: chattingMessages.length > 0?chattingMessages.shift().replace(/[\&|#]*/ig, "").replace(/'/ig,"\\'"):""
+		Message: sMessage
 	}, syncHandler);
+	
+	if (bResult)
+	{
+		chattingMessages.shift();
+	}
 	
 	setTimeout(syncLoop, syncDelay);
 }

@@ -52,6 +52,7 @@ public class APIs : System.Web.Services.WebService
     [WebMethod(EnableSession = true)]
     public void Initialize(int iCameraX, int iCameraY, int iCameraWidth, int iCameraHeight)
     {
+        AppData.Instance.UserLastActivity = DateTime.Now;
 
         Doufu.JSON.Object<Doufu.JSON.IJSONObject> jRoot = new Doufu.JSON.Object<Doufu.JSON.IJSONObject>();
 
