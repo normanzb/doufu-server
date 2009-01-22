@@ -77,8 +77,8 @@ doufu.SampleGame.ServiceMapper.SyncWithCallback = (function()
 	var rq = new doufu.Http.JSON();
 	var _fSuccess;
 	
-	// set 30 seconds time out
-	rq.Timeout(1000 * 30);
+	// set 9 seconds time out
+	rq.Timeout(1000 * 9);
 	rq.OnSuccess.Attach(new doufu.Event.CallBack(function()
 	{
 		_fSuccess.apply(this, arguments);
@@ -105,6 +105,10 @@ doufu.SampleGame.ServiceMapper.SyncWithCallback = (function()
 			rq.Open(doufu.SampleGame.ServiceMapper.PATH_DOUFU_SERVICE + "SyncWithCallback",
 			 "sCallbackMethod");
 			rq.Send(jPost);
+			
+			return true;
 		}
+		
+		return false;
 	}
 })();
