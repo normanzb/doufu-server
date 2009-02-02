@@ -16,6 +16,8 @@ namespace Doufu.JSON
             {
                 this.Context = System.Web.HttpContext.Current;
                 this.Context.Response.ContentType = "application/json";
+                this.Context.Response.Charset = "utf-8";
+                this.Context.Response.Cache.SetCacheability(System.Web.HttpCacheability.NoCache);
                 this.Context.Response.Buffer = false;
             }
 
@@ -61,7 +63,7 @@ namespace Doufu.JSON
                     
                 }
                 this.Context.Response.Write(retJString);
-                this.Context.Response.Flush();
+                this.Context.Response.End();
                 this.Context.Response.Close();
             }
 
