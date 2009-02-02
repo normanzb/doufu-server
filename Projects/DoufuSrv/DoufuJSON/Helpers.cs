@@ -18,7 +18,7 @@ namespace Doufu.JSON
                 this.Context.Response.ContentType = "application/json";
                 this.Context.Response.Charset = "utf-8";
                 this.Context.Response.Cache.SetCacheability(System.Web.HttpCacheability.NoCache);
-                this.Context.Response.Buffer = false;
+                
             }
 
             /// <summary>
@@ -52,6 +52,8 @@ namespace Doufu.JSON
             /// <param name="sCallback">Callback function name</param>
             public void RespondJSON(Doufu.JSON.IJSONObject oJson, string sCallback)
             {
+                this.Context.Response.Buffer = true;
+
                 string retJString = string.Empty;
                 if (sCallback == null || sCallback.Trim() == string.Empty)
                 {
@@ -62,6 +64,7 @@ namespace Doufu.JSON
                     retJString = sCallback + "(" + oJson.ToString() + ");" + "\r\n\r\n";
                     
                 }
+                
                 this.Context.Response.Write(retJString);
                 this.Context.Response.End();
                 this.Context.Response.Close();
@@ -82,6 +85,8 @@ namespace Doufu.JSON
             /// <param name="oJson"></param>
             public void RespondComet(Doufu.JSON.IJSONObject oJson, string sCallback)
             {
+                this.Context.Response.Buffer = false;
+
                 if (sCallback != null)
                 {
                     this.Context.Response.Write(sCallback + "(" + oJson.ToString() + ");" + "\r\n\r\n");
@@ -90,6 +95,7 @@ namespace Doufu.JSON
                 {
                     this.Context.Response.Write(oJson.ToString() + "\r\n\r\n");
                 }
+
                 this.Context.Response.Flush();
             }
         }
