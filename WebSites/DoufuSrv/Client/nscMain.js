@@ -272,10 +272,7 @@ function syncLoop()
 		Message: sMessage
 	}, syncHandler);
 	
-	if (bResult)
-	{
-		chattingMessages.shift();
-	}
+	chattingMessages.shift();
 	
 	setTimeout(syncLoop, syncDelay);
 }

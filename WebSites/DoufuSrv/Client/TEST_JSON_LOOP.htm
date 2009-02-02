@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<title>JSON TEST</title>
+	<link href="./themes/default.css" rel="stylesheet" type="text/css"/>
+	<link href="./themes/alert.css" rel="stylesheet" type="text/css"/>
+	<link href="./themes/alert_lite.css" rel="stylesheet" type="text/css"/>
+	<link href="./themes/alphacube.css" rel="stylesheet" type="text/css"/>
+	<link href="./themes/growler.css" rel="stylesheet" type="text/css"/>
+	<link href="./themes/blackbird.css" rel="stylesheet" type="text/css"/>
+	
+	<!-- TODO: generate below line automatically by browser bubble-->
+	<link href="./LibraryFiles/doufu.SpeechBubbles/Styles/default.css" rel="stylesheet" type="text/css"/>
+	
+	<script type="text/javascript" src="./helpers/doufu.packed.js"></script>
+	<script type="text/javascript" src="./helpers/prototype-1.6.0.3.js"></script>
+	<style>
+	body
+	{
+		margin:0px;
+	}
+	</style>
+</head>
+<body>
+
+<script type="text/javascript" src="./helpers/effects.js"></script>
+<script type="text/javascript" src="./helpers/window.js"></script>
+<script type="text/javascript" src="./helpers/debug.js"></script>
+
+<!-- may replace by my own bubble class -->
+<script type="text/javascript" src="./helpers/Growler.js"> </script>
+
+<script type="text/javascript" src="./helpers/blackbird.js"> </script>
+
+<script src="./doufu.SampleGame.js"></script>
+<script src="./doufu.SampleGame.ServiceMapper.js"></script>
+<script src="./doufu.SampleGame.UI.js"></script>
+<script src="./nscConfig.js"></script>
+
+<script>
+var rq = new doufu.Http.JSON();
+rq.Timeout(999999);
+rq.OnSuccess.Attach(new doufu.Event.CallBack(function(sender, args)
+{
+	
+	console.log("OK:" + args.ResponseJSON.Movements);
+	rq.Close();
+	setTimeout(loopee, 100);
+}, this));
+
+function loopee()
+{
+
+	//rq.Open("./json.js","callback");
+	rq.Open(doufu.SampleGame.ServiceMapper.PATH_DOUFU_SERVICE + "SyncWithCallback",
+			 "sCallbackMethod");
+	rq.Send("sStatusJSONString=");
+}
+
+loopee();
+
+</script>
+
+</body>
+</html>

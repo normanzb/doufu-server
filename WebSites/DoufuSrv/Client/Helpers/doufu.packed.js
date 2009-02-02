@@ -1466,13 +1466,18 @@ this.Ctor();};doufu.Http.JSON.Parse=function(sJSONStr)
 else
 {eval("tmpobj = "+sJSONStr);}
 return tmpobj;}
+doufu.Http.JSON.Stringify=function(oJSON)
+{if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer&&doufu.Browser.BrowserDetect.Version>=8)
+{return JSON.stringify(oJSON);}
+else
+{return"";}}
 doufu.Http.JSON.CallbackManager=new function()
 {doufu.OOP.Class(this);this.Callbacks={};this.Register=function(oJSONRequst)
 {if(!oJSONRequst.InstanceOf(doufu.Http.JSON))
 {throw doufu.System.Exception("doufu.Http.JSON.CallbackManager::Register() - The object specified was not a json request object.");}
 this.Callbacks[oJSONRequst.Handle.ID]=function(oJData)
 {if(oJSONRequst.ReadyState==2||oJSONRequst.ReadyState==3)
-{oJSONRequst.OnSuccess.Invoke({"ResponseJSON":oJData,"ResponseText":oJSONRequst.ResponseText()});oJSONRequst.ResponseJSON(oJData);}
+{oJSONRequst.OnSuccess.Invoke({"ResponseJSON":oJData,"ResponseText":doufu.Http.JSON.Stringify(oJData)});oJSONRequst.ResponseJSON(oJData);}
 else
 {doufu.System.Logger.Error(String.format("doufu.Http.JSON.CallbackManager:Register(): request handle id = {0}; ready state = {1}",oJSONRequst.Handle.ID,oJSONRequst.ReadyState));}}
 return"doufu.Http.JSON.CallbackManager.Callbacks["+oJSONRequst.Handle.ID+"]";}
