@@ -98,7 +98,7 @@ doufu.SampleGame.ServiceMapper.SyncWithCallback = (function()
 			var jUser = "'User':'" + oArgs.Cube.Name + "'";
 			var jMovement = "'Movements':{'X':" + oArgs.Cube.X + ",'Y':" + oArgs.Cube.Y + ",'Z':" + oArgs.Cube.Z + "}";
 			var jMessage = "'Message': ' " + oArgs.Message + " '"
-			var jPost = "sStatusJSONString={" + jUser + "," + jMovement + (bHasMsg?"," + jMessage:"") + "}";
+			var jPost = {"sStatusJSONString":"{" + jUser + "," + jMovement + (bHasMsg?"," + jMessage:"") + "}"};
 			
 			
 			//rq.OnFail.Attach(new doufu.Event.CallBack(fFail, this));

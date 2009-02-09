@@ -1367,13 +1367,17 @@ this.Abort=function()
 this.Close=function()
 {this.Abort();delete nativeRequest;}
 this.Send=function(sPostBody)
-{var sActualBody="";if((typeof sPostBody).toLowerCase()=="string")
+{var sActualBody="";if(String.isString(sPostBody))
 {sActualBody=sPostBody;}
 else
 {var bFirstParam=true;for(var o in sPostBody)
 {if(!bFirstParam)
 {sActualBody+='&';}
-sActualBody+=o;sActualBody+="=";sActualBody+=sPostBody[o];bFirstParam=false;}
+sActualBody+=o;sActualBody+="=";if(String.isString(sPostBody[o]))
+{sActualBody+=sPostBody[o];}
+else
+{sActualBody+=doufu.Http.JSON.Stringify(sPostBody[o]);}
+bFirstParam=false;}
 this.SetRequestHeader("Content-Type","application/x-www-form-urlencoded");}
 this.OnSend.Invoke();nativeRequest.send(sActualBody);}
 this.Ctor=function()
@@ -1420,16 +1424,27 @@ else
 this.Send=function(data)
 {if(this.ReadyState!=1)
 {throw doufu.System.Exception('doufu.Http.JSON::Send() - Conneciton was not opened.');}
-this.ReadyState=2;if(_callbackParameterName!=null)
+this.ReadyState=2;var sActualData="";if(String.isString(data))
+{sActualData=data;}
+else
+{var bFirstParam=true;for(var o in data)
+{if(!bFirstParam)
+{sActualData+='&';}
+sActualData+=o;sActualData+="=";if(String.isString(data[o]))
+{sActualData+=data[o];}
+else
+{sActualData+=doufu.Http.JSON.Stringify(data[o]);}
+bFirstParam=false;}}
+if(_callbackParameterName!=null)
 {var container=document.getElementById(CONTAINER_ID);if(!container)
 {container=document.createElement('div');container.setAttribute('id',CONTAINER_ID);document.body.appendChild(container);}
-var tmpUrl=doufu.Http.AddStampToUrl(doufu.Http.AddParameterToUrl(this.Url(),_callbackParameterName,sGCallbackFunc));doufu.System.Logger.Verbose("doufu.Http.JSON::Send(): Actual url is "+tmpUrl);if(data!=null)
-{tmpUrl=tmpUrl+"&"+encodeURI(data);}
+var tmpUrl=doufu.Http.AddStampToUrl(doufu.Http.AddParameterToUrl(this.Url(),_callbackParameterName,sGCallbackFunc));doufu.System.Logger.Verbose("doufu.Http.JSON::Send(): Actual url is "+tmpUrl);if(sActualData!=null)
+{tmpUrl=tmpUrl+"&"+encodeURI(sActualData);}
 script=document.createElement('script');script.setAttribute("defer","defer");script.setAttribute("id",CONTAINER_ID+"_script_"+this.Handle.ID)
 script.setAttribute("type","text/javascript");script.setAttribute("charset","utf-8");script.src=tmpUrl;container.appendChild(script);}
 else
 {var rq=new doufu.Http.Request();rq.OnSuccess.Attach(new doufu.Event.CallBack(function(sender,args)
-{this.OnSuccess.Invoke({"ResponseJSON":doufu.Http.JSON.Parse(args.ResponseText)});},this));rq.Open('GET',this.Url(),true);rq.Send();}
+{this.OnSuccess.Invoke({"ResponseJSON":doufu.Http.JSON.Parse(args.ResponseText)});},this));rq.Open('GET',this.Url(),true);rq.Send(data);}
 if(this.ReadyState<4)
 {this.ReadyState=3;}
 if(this.Timeout()>0)
@@ -1470,7 +1485,7 @@ doufu.Http.JSON.Stringify=function(oJSON)
 {if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer&&doufu.Browser.BrowserDetect.Version>=8)
 {return JSON.stringify(oJSON);}
 else
-{return"";}}
+{return oJSON.toString();}}
 doufu.Http.JSON.CallbackManager=new function()
 {doufu.OOP.Class(this);this.Callbacks={};this.Register=function(oJSONRequst)
 {if(!oJSONRequst.InstanceOf(doufu.Http.JSON))
