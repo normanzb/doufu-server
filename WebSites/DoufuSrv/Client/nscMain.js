@@ -52,7 +52,7 @@ var loopTimeout = 70;
 var sUsername = "";
 
 // main chars
-var godFather = new doufu.SampleGame.Roles.MaskKiller();
+var player = new doufu.SampleGame.Roles.Naked();
 
 // char array
 var sprChars = {};
@@ -77,7 +77,7 @@ function t_init(user, pass)
 					if (tmp.Return == true)
 					{
 						doufu.System.Logger.Debug("t_init() - Initialized...");
-							doufu.SampleGame.ServiceMapper.MoveTo(godFather,
+							doufu.SampleGame.ServiceMapper.MoveTo(player,
 							function(sender, args){
 								var tmp = doufu.Http.JSON.Parse(args.ResponseText);
 								if (tmp.Return == true)
@@ -176,11 +176,11 @@ function testLoop()
 function reportLoop()
 {
 	if (!reporting && 
-		(oldReportingCube.X != godFather.X || oldReportingCube.Y != godFather.Y))
+		(oldReportingCube.X != player.X || oldReportingCube.Y != player.Y))
 	{
 		reporting = true;
-		oldReportingCube.DeepCopy(godFather);
-		doufu.SampleGame.ServiceMapper.MoveTo(godFather, function(sender, args)
+		oldReportingCube.DeepCopy(player);
+		doufu.SampleGame.ServiceMapper.MoveTo(player, function(sender, args)
 		{
 			if (doufu.Http.JSON.Parse(args.ResponseText).Return != true)
 			{
@@ -255,7 +255,7 @@ function syncHandler(sender, args)
 			if (tmpLogs[i].Message.trim() != String.empty && sprChars[tmpLogs[i].User] != null)
 			{
 				// TODO: add to logger
-				//log.info(godFather.Name + ": " + sMsg);
+				//log.info(player.Name + ": " + sMsg);
 				sprChars[tmpLogs[i].User].Say(tmpLogs[i].Message);
 			}
 		}
@@ -266,9 +266,9 @@ function syncHandler(sender, args)
 function syncLoop()
 {
 	var sMessage = chattingMessages.length > 0?chattingMessages[0].replace(/[\&|#]*/ig, "").replace(/'/ig,"\\'"):"";
-	//oPreviousPosi.DeepCopy(godFather);
+	//oPreviousPosi.DeepCopy(player);
 	var bResult = doufu.SampleGame.ServiceMapper.SyncWithCallback({
-		Cube: godFather, 
+		Cube: player, 
 		Message: sMessage
 	}, syncHandler);
 	
@@ -309,23 +309,22 @@ function StartLoops()
 // the ground which is a 2 dimension map, if the character want to fly, just set its z index to the flying
 // on the sky range. the movement caculator just ignore the z index.
 
-godFather.Z = 0;
-godFather.X = 320;
-godFather.Y = 350;
-godFather.Attributes = {};
-godFather.Attributes.GoodGuy = true;
+player.Z = 0;
+player.X = 320;
+player.Y = 350;
+player.Attributes = {};
+player.Attributes.GoodGuy = true;
 
-mapLonglyIsland = new doufu.SampleGame.Maps.LonglyIsland(GeneralPlayGroundManager);
-mapLonglyIsland.GoodGuy(godFather);
-mapLonglyIsland.Initialize();
+mapJungle = new doufu.SampleGame.Maps.Jungle(GeneralPlayGroundManager);
+mapJungle.Initialize();
 
 GeneralPlayGroundManager.Camera().SmoothTracing = true;
 GeneralPlayGroundManager.Camera().SkipFrame = 0;
-GeneralPlayGroundManager.Camera().Trace(godFather);
+GeneralPlayGroundManager.Camera().Trace(player);
 
-GeneralPlayGroundManager.InsertObject(godFather);
+GeneralPlayGroundManager.InsertObject(player);
 
-//godFather.StartMoving(new doufu.Game.Direction(16), 49)
+//player.StartMoving(new doufu.Game.Direction(16), 49)
 //====================
 
 /////////////
@@ -335,9 +334,9 @@ uiLogin.OnConfirmed.Attach(new doufu.Event.CallBack(function(sender, args)
 {
 	// set current user name
 	sUsername = args.User;
-	godFather.Name = sUsername;
+	player.Name = sUsername;
 	
-	sprChars[sUsername] = godFather;
+	sprChars[sUsername] = player;
 	
 	// initialize this user
 	t_init(args.User, args.Pass);
@@ -364,7 +363,7 @@ var keyUpCallback = new doufu.Event.CallBack(function(sender, args)
 		!keyRight.IsKeyDown &&
 		 keyboardMode == 0)
 	{
-		godFather.StopMoving();
+		player.StopMoving();
 	}
 },this);
 
@@ -372,7 +371,7 @@ keyLeft.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
 {
 	if (args.StatusChanged && keyboardMode == 0)
 	{
-		godFather.WalkWest();
+		player.WalkWest();
 	}
 },keyLeft));
 keyLeft.OnKeyUp.Attach(keyUpCallback);
@@ -381,7 +380,7 @@ keyRight.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
 {
 	if (args.StatusChanged && keyboardMode == 0)
 	{
-		godFather.WalkEast();
+		player.WalkEast();
 	}
 },keyRight));
 keyRight.OnKeyUp.Attach(keyUpCallback);
@@ -390,7 +389,7 @@ keyUp.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
 {
 	if (args.StatusChanged && keyboardMode == 0)
 	{
-		godFather.WalkNorth();
+		player.WalkNorth();
 	}
 },keyUp));
 keyUp.OnKeyUp.Attach(keyUpCallback);
@@ -399,7 +398,7 @@ keyDown.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
 {
 	if (args.StatusChanged && keyboardMode == 0)
 	{
-		godFather.WalkSouth();
+		player.WalkSouth();
 	}
 },keyDown));
 keyDown.OnKeyUp.Attach(keyUpCallback);
