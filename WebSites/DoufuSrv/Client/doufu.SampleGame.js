@@ -12,9 +12,9 @@ doufu.SampleGame.Roles = new Object();
 doufu.SampleGame.Roles.Helpers = new Object();
 doufu.SampleGame.Roles.Helpers.SetPolygon = function(fourDirectionSprite)
 {
-	if (fourDirectionSprite == null || !fourDirectionSprite.InstanceOf(doufu.Game.Sprites.FourDirectionSprite))
+	if (fourDirectionSprite == null || !fourDirectionSprite.InstanceOf(doufu.Game.Sprites.Sprite))
 	{
-		throw doufu.System.Exception("doufu.SampleGame.Roles.Helpers.SetPolygon(): fourDirectionSprite must be an instance of doufu.Game.Sprites.FourDirectionSprite.");
+		throw doufu.System.Exception("doufu.SampleGame.Roles.Helpers.SetPolygon(): fourDirectionSprite must be an instance of doufu.Game.Sprites.Sprite.");
 	}
 	
 	// use polygon, slower
@@ -47,9 +47,9 @@ doufu.SampleGame.Roles.Helpers.SetPolygon = function(fourDirectionSprite)
 
 doufu.SampleGame.Roles.Helpers.SetAnimation = function(fourDirectionSprite)
 {
-	if (fourDirectionSprite == null || !fourDirectionSprite.InstanceOf(doufu.Game.Sprites.FourDirectionSprite))
+	if (fourDirectionSprite == null || !fourDirectionSprite.InstanceOf(doufu.Game.Sprites.Sprite))
 	{
-		throw doufu.System.Exception("doufu.SampleGame.Roles.Helpers.SetPolygon(): fourDirectionSprite must be an instance of doufu.Game.Sprites.FourDirectionSprite.");
+		throw doufu.System.Exception("doufu.SampleGame.Roles.Helpers.SetAnimation(): fourDirectionSprite must be an instance of doufu.Game.Sprites.Sprite.");
 	}
 	
 	var frameNumber = 3;
@@ -82,19 +82,26 @@ doufu.SampleGame.Roles.Helpers.SetAnimation = function(fourDirectionSprite)
 	fourDirectionSprite.AnimationInfos.MoveDown.PlayReboundly = playreboundly;
 }
 
-doufu.SampleGame.Roles.Base = function()
+doufu.SampleGame.Roles.Base = function(bIsometric)
 {
 	$c(this);
 	
-	this.Inherit(doufu.Game.Sprites.FourDirectionSprite);
+	if (bIsometric != null && bIsometric == true)
+	{
+		this.Inherit(doufu.Game.Sprites.IsometricSprite);
+	}
+	else
+	{
+		this.Inherit(doufu.Game.Sprites.FourDirectionSprite);
+	}
 	
 	this.WalkSpeed = 249;
 	this.RunSpeed = 549;
 	
-	var drctWest = new doufu.Game.Direction(48);
-	var drctEast = new doufu.Game.Direction(16);
-	var drctNorth = new doufu.Game.Direction(12);
-	var drctSouth = new doufu.Game.Direction(4);
+	var drctWest = new doufu.Game.Direction(60);
+	var drctEast = new doufu.Game.Direction(20);
+	var drctNorth = new doufu.Game.Direction(28);
+	var drctSouth = new doufu.Game.Direction(52);
 		
 	var bubbles = new doufu.SpeechBubbles.GameBubble(this);
 	
@@ -150,7 +157,7 @@ doufu.SampleGame.Roles.Naked = function()
 {
 	$c(this);
 	
-	this.Inherit(doufu.SampleGame.Roles.Base);
+	this.Inherit(doufu.SampleGame.Roles.Base, [true]);
 	
 	// Set the image offset
 	//this.ImageOffset.X = 24*3;
@@ -175,7 +182,7 @@ doufu.SampleGame.Roles.Naked = function()
 	
 	doufu.SampleGame.Roles.Helpers.SetAnimation(this);
 	
-	this.AnimationInfos.MoveRight.Row = 0;
+	this.AnimationInfos.MoveRight.Row = 3;
 	this.AnimationInfos.MoveRight.Column = 0;
 	
 	this.AnimationInfos.MoveLeft.Row = 1;
@@ -184,11 +191,11 @@ doufu.SampleGame.Roles.Naked = function()
 	this.AnimationInfos.MoveUp.Row = 0;
 	this.AnimationInfos.MoveUp.Column = 0;
 	
-	this.AnimationInfos.MoveDown.Row = 1;
+	this.AnimationInfos.MoveDown.Row = 2;
 	this.AnimationInfos.MoveDown.Column = 0;
 	
 	this.AnimationInfos.StopRight = new doufu.Game.Animation.Info();
-	this.AnimationInfos.StopRight.Row = 0;
+	this.AnimationInfos.StopRight.Row = 3;
 	this.AnimationInfos.StopRight.Column = 1;
 	this.AnimationInfos.StopRight.FrameNumber = 1;
 	this.AnimationInfos.StopRight.RepeatNumber = 1;
@@ -206,7 +213,7 @@ doufu.SampleGame.Roles.Naked = function()
 	this.AnimationInfos.StopUp.RepeatNumber = 1;
 	
 	this.AnimationInfos.StopDown = new doufu.Game.Animation.Info();
-	this.AnimationInfos.StopDown.Row = 1;
+	this.AnimationInfos.StopDown.Row = 2;
 	this.AnimationInfos.StopDown.Column = 1;
 	this.AnimationInfos.StopDown.FrameNumber = 1;
 	this.AnimationInfos.StopDown.RepeatNumber = 1;
@@ -574,6 +581,36 @@ doufu.SampleGame.Items.SmallCloud = function()
 }
 
 doufu.SampleGame.Maps = new Object();
+doufu.SampleGame.Maps.Training = function(oPlayGround)
+{
+	$c(this);
+	this.Inherit(doufu.Game.Map, [oPlayGround]);
+	
+	this.ImagePath = CONFIG_STAGES_PATH + "Training.gif";
+	this.BackgroundImagePath(CONFIG_STAGES_PATH + "Training_bg.gif");
+	this.BackgroundRepeat(true);
+	
+	this.Width = 1024;
+	this.Height = 1024;
+
+	
+	var flower = new doufu.SampleGame.Items.Flower();
+	flower.LocationX(447);
+	flower.LocationY(443);
+	var brokenHouse = new doufu.SampleGame.Items.House1();
+	brokenHouse.LocationX(247);
+	brokenHouse.LocationY(340);
+	
+
+	
+	this.InitSprites.Add(flower);
+	this.InitSprites.Add(brokenHouse);
+	
+	var _base_Initialize = this.OverrideMethod("Initialize", function()
+	{
+		_base_Initialize.call(this);
+	});
+}
 doufu.SampleGame.Maps.Jungle = function(oPlayGround)
 {
 	$c(this);

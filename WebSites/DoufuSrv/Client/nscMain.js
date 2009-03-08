@@ -227,7 +227,7 @@ function syncHandler(sender, args)
 		if (typeof sprChars[spr] == $Undefined)
 		{
 			
-			sprTmp = new doufu.SampleGame.Roles.MaskKiller();
+			sprTmp = new doufu.SampleGame.Roles.Naked();
 			// disable collision
 			sprTmp.EnableCollision = false;
 			GeneralPlayGroundManager.InsertObject(sprTmp);
@@ -310,12 +310,12 @@ function StartLoops()
 // on the sky range. the movement caculator just ignore the z index.
 
 player.Z = 0;
-player.X = 320;
-player.Y = 350;
+player.LocationX(320);
+player.LocationY(470);
 player.Attributes = {};
 player.Attributes.GoodGuy = true;
 
-mapJungle = new doufu.SampleGame.Maps.Jungle(GeneralPlayGroundManager);
+mapJungle = new doufu.SampleGame.Maps.Training(GeneralPlayGroundManager);
 mapJungle.Initialize();
 
 GeneralPlayGroundManager.Camera().SmoothTracing = true;

@@ -430,12 +430,13 @@ doufu.Browser.Element=function(element)
 {doufu.OOP.Class(this);var thisElement=this;var _native;var nativeEventArgProcessor=function(pFunc)
 {return function(e)
 {if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer&&typeof event!=doufu.System.Constants.TYPE_UNDEFINED)
-{e=event;}
+{e=event;if(e.target==null)
+{e.target=event.srcElement;}}
 pFunc(e);};}
 this.NewProperty("Native");this.Native.Get=function()
 {return _native;}
 this.NewProperty("TagName");this.TagName.Get=function()
-{return this.Native().tagName;}
+{return this.Native().tagName.toUpperCase();}
 var _onkeydown;this.OnKeyDown=new doufu.Event.EventHandler(this);var _onkeyup;this.OnKeyUp=new doufu.Event.EventHandler(this);var _onfocus;this.OnFocus=new doufu.Event.EventHandler(this);var _onblur;this.OnBlur=new doufu.Event.EventHandler(this);var _onload;this.OnLoad=new doufu.Event.EventHandler(this);var _onclick;this.OnClick=new doufu.Event.EventHandler(this);var _onchange;this.OnChange=new doufu.Event.EventHandler(this);this.AppendChild=function(elmtAppend)
 {var elmtActual=elmtAppend;if(typeof elmtAppend.InstanceOf!=$Undefined&&elmtAppend.InstanceOf(doufu.Browser.Element))
 {elmtActual=elmtAppend.Native();}
@@ -472,6 +473,41 @@ this.Opacity.Set=function(value)
 else if(value<0)
 {value=0;}
 _opacity=value;this.Native().style.opacity=Math.floor(value/10)/10;this.Native().style.filter="alpha(opacity="+value+")";}
+var comparePropAndStyle=function(prop,styleProp)
+{var sRet=String.empty;var sProp=new String(prop).trim().replace(/ /ig,"");var sStyleProp=new String(styleProp.replace("px","")).replace(/ /ig,"");sStyleProp=sStyleProp.trim();if(sProp==sStyleProp&&sStyleProp!=String.empty)
+{sRet=sProp;}
+else
+{sRet=styleProp;}
+return sRet;}
+this.NewProperty("Height");this.Height.Get=function()
+{return comparePropAndStyle(this.Native().height,this.Native().style.height);}
+this.Height.Set=function(value)
+{this.Native().height=value;var formattedValue=new String(value).trim();if(formattedValue.charAt(formattedValue.length-1)=='%')
+{this.Native().style.height=value;}
+else
+{this.Native().style.height=value+"px";}}
+this.NewProperty("Width");this.Width.Get=function()
+{return comparePropAndStyle(this.Native().width,this.Native().style.width);}
+this.Width.Set=function(value)
+{this.Native().width=value;var formattedValue=new String(value).trim();if(formattedValue.charAt(formattedValue.length-1)=='%')
+{this.Native().style.width=value;}
+else
+{this.Native().style.width=value+"px";}}
+this.NewProperty("Text");this.Text.Get=function()
+{var sRet=null;if(this.TagName()=="INPUT")
+{sRet=this.Native().value;}
+else
+{sRet=this.Native().innerHTML;}
+return sRet;}
+this.Text.Set=function(value)
+{if(this.TagName()=="INPUT")
+{this.Native().value=value;}
+else
+{this.Native().innerHTML=value;}}
+this.NewProperty("BackgroundImage");this.BackgroundImage.Get=function()
+{var sRet=this.Native().style.backgroundImage.replace(/^url\(\"?/i,"");sRet=sRet.replace(/\"?\)$/i,"");return sRet;}
+this.BackgroundImage.Set=function(value)
+{this.Native().style.backgroundImage="url("+value+")";}
 this.Effects=new function()
 {doufu.OOP.Class(this);var thisEffects=this;var fadingDirection=0;this.NewProperty("FadingDirection");this.FadingDirection.Get=function()
 {return fadingDirection;}
@@ -997,8 +1033,12 @@ doufu.Game.Animation.Info=function()
 {doufu.OOP.Class(this);this.Column;this.Row;this.FrameNumber;this.RepeatNumber;this.FrameSkip=0;this.PlayReboundly=false;}
 doufu.Game.BaseObject=function(){doufu.OOP.Class(this);this.Inherit(doufu.Display.Drawing.Cube);this.Inherit(doufu.System.Handle.Handlable);this.ImageOffset=new doufu.Display.Drawing.Point();this.StandingOffset=new doufu.Display.Drawing.Point();this.NewProperty("LocationX");this.LocationX.Get=function()
 {return this.X+this.StandingOffset.X;}
+this.LocationX.Set=function(value)
+{this.X=value-this.StandingOffset.X;}
 this.NewProperty("LocationY");this.LocationY.Get=function()
 {return this.Y+this.StandingOffset.Y;}
+this.LocationY.Set=function(value)
+{this.Y=value-this.StandingOffset.Y;}
 this.FollowerOffset=new doufu.Display.Drawing.Point();this.ImagePath=new String();this.Animation=new doufu.Game.Animation(this);var _linkedDisplayObject=new doufu.Display.BaseObject();this.NewProperty("LinkedDisplayObject");this.LinkedDisplayObject.Get=function()
 {return _linkedDisplayObject;}
 this.LinkedDisplayObject.Set=function(value)
@@ -1140,6 +1180,41 @@ _base_StopMoving();});this.Ctor=function()
 this.ImagePath=oInfoSet.ImagePath;this.ImageOffset=oInfoSet.ImageOffset;this.AnimationInfos=oInfoSet.AnimationInfos;this.Animation.Play(this.AnimationInfos.Init);}}
 this.Ctor();}
 doufu.Game.Sprites.FourDirectionSprite.InfoSet=function(){doufu.OOP.Class(this);ImagePath="";ImageOffset=new doufu.Display.Drawing.Point();AnimationInfos={Init:new doufu.Game.Animation.Info(),MoveUp:new doufu.Game.Animation.Info(),MoveDown:new doufu.Game.Animation.Info(),MoveLeft:new doufu.Game.Animation.Info(),MoveRight:new doufu.Game.Animation.Info(),StopUp:new doufu.Game.Animation.Info(),StopDown:new doufu.Game.Animation.Info(),StopLeft:new doufu.Game.Animation.Info(),StopRight:new doufu.Game.Animation.Info()}}
+doufu.Game.Sprites.IsometricSprite=function(oInfoSet)
+{doufu.OOP.Class(this);this.Inherit(doufu.Game.Sprites.Sprite);var aniDirection=null;this.AnimationInfos={};var startToPlay=function()
+{if(aniDirection.X()==-1&&aniDirection.Y()==-1&&this.Animation.AnimationInfo!=this.AnimationInfos.MoveLeft)
+{this.Animation.Play(this.AnimationInfos.MoveLeft);}
+else if(aniDirection.X()==1&&aniDirection.Y()==1&&this.Animation.AnimationInfo!=this.AnimationInfos.MoveRight)
+{this.Animation.Play(this.AnimationInfos.MoveRight);}
+else if(aniDirection.Y()==1&&aniDirection.X()==-1&&this.Animation.AnimationInfo!=this.AnimationInfos.MoveDown)
+{this.Animation.Play(this.AnimationInfos.MoveDown);}
+else if(aniDirection.Y()==-1&&aniDirection.X()==1&&this.Animation.AnimationInfo!=this.AnimationInfos.MoveUp)
+{this.Animation.Play(this.AnimationInfos.MoveUp);}}
+var _base_MoveToDest=this.OverrideMethod("MoveToDest",function()
+{var bRet=_base_MoveToDest();if(aniDirection!=null&&aniDirection.XAxis()!=this.Direction.XAxis()&&aniDirection.YAxis()!=this.Direction.YAxis())
+{startToPlay.call(this);}
+return bRet;});var _base_StartMoving=this.OverrideMethod("StartMoving",function(oDirection,iSpeed)
+{doufu.System.Logger.Verbose("doufu.Game.Sprites.FourDirectionSprite::StartMoving(): Was invoked with following parameters, oDirection = "+oDirection.toString());aniDirection=oDirection;startToPlay.call(this);_base_StartMoving(oDirection,iSpeed);});var _base_StartMovingToDest=this.OverrideMethod("StartMovingToDest",function(cubeDest,iSpeed)
+{if(_base_StartMovingToDest(cubeDest,iSpeed))
+{aniDirection=this.Direction;if(iSpeed!=null)
+{startToPlay.call(this);}
+return true;}
+return false;});var _base_StopMoving=this.OverrideMethod("StopMoving",function()
+{if(this.Direction.X()==-1&&this.Direction.Y()==-1&&this.AnimationInfos.StopLeft!=null)
+{this.Animation.Play(this.AnimationInfos.StopLeft);}
+else if(this.Direction.X()==1&&this.Direction.Y()==1&&this.AnimationInfos.StopRight!=null)
+{this.Animation.Play(this.AnimationInfos.StopRight);}
+else if(this.Direction.Y()==1&&this.Direction.X()==-1&&this.AnimationInfos.StopDown!=null)
+{this.Animation.Play(this.AnimationInfos.StopDown);}
+else if(this.Direction.Y()==-1&&this.Direction.X()==1&&this.AnimationInfos.StopUp!=null)
+{this.Animation.Play(this.AnimationInfos.StopUp);}
+_base_StopMoving();});this.Ctor=function()
+{if(oInfoSet!=null)
+{if(!oInfoSet.InstanceOf(doufu.Game.Sprites.IsometricSprite.InfoSet))
+{throw doufu.System.Exception("doufu.Game.Sprites.IsometricSprite::Ctor(): oInfoSet must be an instance of doufu.Game.Sprites.IsometricSprite.InfoSet.");}
+this.ImagePath=oInfoSet.ImagePath;this.ImageOffset=oInfoSet.ImageOffset;this.AnimationInfos=oInfoSet.AnimationInfos;this.Animation.Play(this.AnimationInfos.Init);}}
+this.Ctor();}
+doufu.Game.Sprites.IsometricSprite.InfoSet=function(){doufu.OOP.Class(this);ImagePath="";ImageOffset=new doufu.Display.Drawing.Point();AnimationInfos={Init:new doufu.Game.Animation.Info(),MoveUp:new doufu.Game.Animation.Info(),MoveDown:new doufu.Game.Animation.Info(),MoveLeft:new doufu.Game.Animation.Info(),MoveRight:new doufu.Game.Animation.Info(),StopUp:new doufu.Game.Animation.Info(),StopDown:new doufu.Game.Animation.Info(),StopLeft:new doufu.Game.Animation.Info(),StopRight:new doufu.Game.Animation.Info()}}
 doufu.Game.EventTrigger=function()
 {doufu.OOP.Class(this);var monitoredSprites=new doufu.CustomTypes.Collection(doufu.Game.Sprites.Sprite);var activatedForSprites={};var activated=true;this.OnCheckCondition=new doufu.Event.EventHandler(this);this.OnTrigger=new doufu.Event.EventHandler(this);this.Trigger=function(sender,args)
 {if(!this.IsActivated())
@@ -1210,7 +1285,15 @@ doufu.Game.Map=function(oPlayGround)
 {doufu.OOP.Class(this);var tmpPolygon1=new doufu.Display.Drawing.Polygon();var tmpPolygon2=new doufu.Display.Drawing.Polygon();var tmpRectangle1=new doufu.Display.Drawing.Rectangle();var tmpRectangle2=new doufu.Display.Drawing.Rectangle();var tmpCube=new doufu.Display.Drawing.Cube();var tmpVector1=new doufu.Display.Drawing.Vector();var tmpVector2=new doufu.Display.Drawing.Vector();this.LinkedPlayGround;this.ImagePath;this.NewProperty("BackgroundImagePath");this.BackgroundImagePath.Get=function()
 {return this.LinkedPlayGround.LinkedDisplayManager().HTMLElement().style.backgroundImage;}
 this.BackgroundImagePath.Set=function(value)
-{this.LinkedPlayGround.LinkedDisplayManager().HTMLElement().style.backgroundPosition="0px 0px";this.LinkedPlayGround.LinkedDisplayManager().HTMLElement().style.backgroundRepeat="no-repeat";this.LinkedPlayGround.LinkedDisplayManager().HTMLElement().style.backgroundImage="url(\""+value+"\")";}
+{this.LinkedPlayGround.LinkedDisplayManager().HTMLElement().style.backgroundPosition="0px 0px";this.BackgroundRepeat(false);this.LinkedPlayGround.LinkedDisplayManager().HTMLElement().style.backgroundImage="url(\""+value+"\")";}
+this.NewProperty("BackgroundRepeat");this.BackgroundRepeat.Get=function()
+{return _backgroundRepeat=false;}
+this.BackgroundRepeat.Set=function(value)
+{if(value==true)
+{this.LinkedPlayGround.LinkedDisplayManager().HTMLElement().style.backgroundRepeat="repeat";}
+else
+{this.LinkedPlayGround.LinkedDisplayManager().HTMLElement().style.backgroundRepeat="no-repeat";}
+_backgroundRepeat=value;}
 this.Width;this.Height;this.Sharps=new doufu.CustomTypes.Collection(doufu.Display.Drawing.Polygon);this.UsePointCollision=true;var _camera=new doufu.Game.PlayGround.Camera();this.NewProperty("Camera");this.Camera.Get=function()
 {return _camera;}
 this.InitSprites=new doufu.CustomTypes.Collection(doufu.Game.Sprites.Sprite);this.ConfirmMovable=function(obj)
