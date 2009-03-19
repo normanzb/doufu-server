@@ -33,6 +33,7 @@ var reportDelay = 1000;
 var reporting = false;
 var oldReportingCube = new doufu.Display.Drawing.Cube();
 var syncDelay = 300;
+var logger;
 
 // chatting related
 var chattingMessages = [];
@@ -230,6 +231,7 @@ function syncHandler(sender, args)
 			sprTmp = new doufu.SampleGame.Roles.Naked();
 			// disable collision
 			sprTmp.EnableCollision = false;
+			sprTmp.Name = spr;
 			GeneralPlayGroundManager.InsertObject(sprTmp);
 			sprChars[spr] = sprTmp;
 			
@@ -254,9 +256,10 @@ function syncHandler(sender, args)
 		{
 			if (tmpLogs[i].Message.trim() != String.empty && sprChars[tmpLogs[i].User] != null)
 			{
-				// TODO: add to logger
-				//log.info(player.Name + ": " + sMsg);
-				sprChars[tmpLogs[i].User].Say(tmpLogs[i].Message);
+				var player = sprChars[tmpLogs[i].User];
+				var msg = tmpLogs[i].Message;
+				logger.Info(player.Name + ": " + msg);
+				player.Say(msg);
 			}
 		}
 		
@@ -329,6 +332,16 @@ GeneralPlayGroundManager.InsertObject(player);
 
 /////////////
 // Initialize UI
+uiUserPanel = new doufu.SampleGame.UI.UserPanel();
+uiUserPanel.OnConfirmed.Attach(new doufu.Event.CallBack(function(sender, args)
+{
+	if (args.Logger == null)
+	{
+		throw doufu.System.Exception("Logger cannot be null");
+	}
+	
+	logger = args.Logger;
+}, this));
 uiLogin = new doufu.SampleGame.UI.Login();
 uiLogin.OnConfirmed.Attach(new doufu.Event.CallBack(function(sender, args)
 {
@@ -343,6 +356,7 @@ uiLogin.OnConfirmed.Attach(new doufu.Event.CallBack(function(sender, args)
 }, this));
 
 uiController = new doufu.SampleGame.UI.Controller();
+uiController.Attach(uiUserPanel);
 uiController.Attach(new doufu.SampleGame.UI.Welcome());
 uiController.Attach(uiLogin);
 
@@ -404,40 +418,6 @@ keyDown.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
 keyDown.OnKeyUp.Attach(keyUpCallback);
 
 
-///////////////
-// handle chatting
-
-// Create message textbox
-
-txtChat = doufu.Browser.DOM.CreateElement("input");
-
-if (txtChat != null)
-{
-	txtChat.SetAttribute("id","idTxtChat");
-	txtChat.Native().style.width = scrWidth + "px";
-	var elBody = doufu.Browser.DOM.$s("$body");
-	elBody.AppendChild(txtChat);
-	txtChat.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
-	{
-		if (args.keyCode == 13)
-		{
-			chattingMessages.push(txtChat.Native().value);
-			txtChat.Native().value = "";
-		}
-	},this));
-	
-	txtChat.OnFocus.Attach(new doufu.Event.CallBack(function(sender, args)
-	{
-		keyboardMode = 1;
-	},this));
-	
-	txtChat.OnBlur.Attach(new doufu.Event.CallBack(function(sender, args)
-	{
-		keyboardMode = 0;
-	},this));
-}
-
-
 // Release when exit
 function GlobalDispose()
 {
@@ -446,8 +426,7 @@ function GlobalDispose()
 	keyUp.Dispose();
 	keyDown.Dispose();
 
-	txtChat.Dispose();
-	elBody.Dispose();
+	uiController.Dispose();
 }
 
 //////////////////////

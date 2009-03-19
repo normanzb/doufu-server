@@ -472,7 +472,8 @@ this.Opacity.Set=function(value)
 {value=100;}
 else if(value<0)
 {value=0;}
-_opacity=value;this.Native().style.opacity=Math.floor(value/10)/10;this.Native().style.filter="alpha(opacity="+value+")";}
+_opacity=value;this.Native().style.opacity=Math.floor(value/10)/10;this.Native().style.filter="alpha(opacity="+value+")";if(value==100)
+{this.Native().style.filter="";}}
 var comparePropAndStyle=function(prop,styleProp)
 {var sRet=String.empty;var sProp=new String(prop).trim().replace(/ /ig,"");var sStyleProp=new String(styleProp.replace("px","")).replace(/ /ig,"");sStyleProp=sStyleProp.trim();if(sProp==sStyleProp&&sStyleProp!=String.empty)
 {sRet=sProp;}

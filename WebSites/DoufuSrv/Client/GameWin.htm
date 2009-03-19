@@ -12,6 +12,43 @@
 	<!-- TODO: generate below line automatically by browser bubble-->
 	<link href="./LibraryFiles/doufu.SpeechBubbles/Styles/default.css" rel="stylesheet" type="text/css"/>
 	
+	<!-- TODO: a separate css-->
+	<style>
+		#idTxtChat
+		{
+			border-top: 0px solid #000;
+			border-left: 0px solid #000;
+			border-right: 0px solid #000;
+			border-bottom: 1px solid #999;
+			background-color: #000;
+			width: 77%;
+			margin-left: 3%;
+			margin-top: 3px;
+			margin-bottom: 7px;
+			height: 20px;
+			color: #fff;
+		}
+		#idPnlUser
+		{
+			height:160px;
+			background-color: #000;
+			width:100%;
+		}
+		#idPnlLogging
+		{
+			height: 125px;
+			color: #fff;
+			padding-top: 5px;
+			margin-left: 3%;
+			margin-right: 3%;
+			width: 94%;
+			overflow: hidden;
+			overflow-y: hidden;
+			font-size: 12px;
+			font-family: tahoma, ËÎÌו;
+		}
+	</style>
+	
 	<script type="text/javascript" src="./helpers/doufu.packed.js"></script>
 	<script type="text/javascript" src="./helpers/prototype-1.6.0.3.js"></script>
 	<style>
@@ -35,17 +72,13 @@
 <script src="./doufu.SampleGame.js"></script>
 <script src="./doufu.SampleGame.ServiceMapper.js"></script>
 <script src="./doufu.SampleGame.UI.js"></script>
+<script src="./doufu.SampleGame.Logger.js"></script>
 <script src="./nscConfig.js"></script>
 <script src="./nscMain.js"></script>
-<div>
+<div style="display:none">
 	<div>Test panel</div>
 	<button onmouseup="alert('x:' + godFather.X + '\r\ny:' + godFather.Y)">Info</button>
 	<button onmouseup="godFather.X = 400">Bring Me Out Of Here</button>
-	<div style="background-color:#ddd;">
-		Build it before test!!<br />
-		Press w, a, s, d to control your char.
-		Press Alt+Shift+~ to open debug console.
-	</div>
 </div>
 </body>
 </html>

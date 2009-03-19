@@ -22,6 +22,11 @@ doufu.SampleGame.UI.Base = function()
 		
 	}
 	
+	this.Dispose = function()
+	{
+		
+	}
+	
 	this.Ctor = function()
 	{
 		if (typeof doufu.SampleGame.UI._initialized == $Undefined)
@@ -54,6 +59,14 @@ doufu.SampleGame.UI.Controller = function()
 		}
 		
 		this.InnerCollection().Items(0).Render();
+	}
+	
+	this.Dispose = function()
+	{
+		for(var i = 0; i < this.InnerCollection().Length(); i++)
+		{
+			this.InnerCollection().Items(index).Dispose();
+		}
 	}
 }
 
@@ -137,5 +150,92 @@ doufu.SampleGame.UI.Login = function()
 			}
 		);
 		
+	});
+}
+
+doufu.SampleGame.UI.UserPanel = function()
+{
+	var frgBody = new doufu.Browser.Element(document.createDocumentFragment());
+	var elBody = doufu.Browser.DOM.$s("$body");
+	var pnlUser, txtChat, logger, pnlLogging;
+
+	$c(this);
+	
+	this.Inherit(doufu.SampleGame.UI.Base);
+	
+	var _base_Render = this.OverrideMethod("Render", function()
+	{
+		///////////////
+		// handle user panel
+
+		pnlUser = doufu.Browser.DOM.CreateElement("div");
+
+		if (pnlUser == null)
+		{
+			throw doufu.System.Exception("pnlUser is null!");
+		}
+
+		pnlUser.SetAttribute("id","idPnlUser");
+		frgBody.AppendChild(pnlUser);
+		
+		///////////////
+		// handle logging panel
+		
+		pnlLogging = doufu.Browser.DOM.CreateElement("div");
+		logger = new doufu.SampleGame.Logger(pnlLogging);
+		
+		if (pnlLogging == null)
+		{
+			throw doufu.System.Exception("pnlLogging is null!");
+		}
+
+		pnlLogging.SetAttribute("id","idPnlLogging");
+		pnlUser.AppendChild(pnlLogging);
+
+		///////////////
+		// handle chatting
+
+		// Create message textbox
+
+		txtChat = doufu.Browser.DOM.CreateElement("input");
+
+		if (txtChat == null)
+		{
+			throw doufu.System.Exception("txtChat is null!");
+		}
+		
+		txtChat.SetAttribute("id","idTxtChat");
+		pnlUser.AppendChild(txtChat);
+		txtChat.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
+		{
+			if (args.keyCode == 13)
+			{
+				chattingMessages.push(txtChat.Native().value);
+				txtChat.Native().value = "";
+			}
+		},this));
+		
+		txtChat.OnFocus.Attach(new doufu.Event.CallBack(function(sender, args)
+		{
+			keyboardMode = 1;
+		},this));
+		
+		txtChat.OnBlur.Attach(new doufu.Event.CallBack(function(sender, args)
+		{
+			keyboardMode = 0;
+		},this));
+		
+		
+		// append fragment
+		elBody.AppendChild(frgBody);
+		this.OnConfirmed.Invoke({Logger: logger});
+	});
+	
+	var _base_Dispose = this.OverrideMethod("Dispose", function()
+	{
+		pnlUser.Dispose();
+		txtChat.Dispose();
+		frgBody.Dispose();
+		elBody.Dispose();
 	});
 }
