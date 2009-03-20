@@ -81,22 +81,22 @@ doufu.SampleGame.UI.Welcome = function()
 		
 		var self = this;
 		Dialog.alert(
-			"<pre>\t\tWelcome to " + doufu.SampleGame.Name + "\n" + 
+			"<center>Welcome to " + doufu.SampleGame.Name + "</center><br />\n" + 
 			"This is a prove of concept of doufu framework " + "\n" + 
-			"(Http://doufu.googlecode.com). Doufu framework is a open sourced" + "\n" + 
-			"game develop framework which dedicated to building pure javascript" + "\n" + 
-			"game." + "\n" + 
-			"This prove of concept will containing demostration of following"  + "\n" + 
-			"features:" + "\n" + 
-			"\t1. Sprite moving." + "\n" +
-			"\t2. Collision detection." + "\n" +
-			"\t3. Event Trigger." + "\n" +
-			"\t4. Sprite tracing." + "\n" +
-			"\t5. Multi player." + "\n" +
+			"(Http://doufu.googlecode.com). Doufu framework" + "\n" + 
+			"is a open sourced game develop framework which" + "\n" + 
+			" dedicated to building pure javascript game." + "\n" + 
+			"This prove of concept will containing " + "\n" + 
+			"demostration of following features:" + "<br /><br />\n" + 
+			"\t1. Sprite moving." + "<br />\n" +
+			"\t2. Collision detection." + "<br />\n" +
+			"\t3. Event Trigger." + "<br />\n" +
+			"\t4. Sprite tracing." + "<br />\n" +
+			"\t5. Multi player." + "<br />\n" +
 			"</pre>",
 			{
 				className: "alphacube",
-				width:600,
+				width:400,
 				height:300,
 				okLabel: "OK",
 				ok: function(win)
