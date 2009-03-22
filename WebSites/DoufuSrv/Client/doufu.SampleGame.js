@@ -26,19 +26,30 @@ doufu.SampleGame.Roles.Helpers.SetPolygon = function(fourDirectionSprite)
 	var polygon = new doufu.Display.Drawing.Polygon();
 	
 	polygon.AddArray([point1, point2, point3, point4]);
-		
-	// use rectangle, faster
-	var oRect = new doufu.Display.Drawing.Rectangle();
-	oRect.X = 6;
-	oRect.Y = 28;
-	oRect.Width = 12;
-	oRect.Height = 8;
-	if (fourDirectionSprite.InstanceOf(doufu.SampleGame.Roles.MaskKillerGiant))
+	
+	if (fourDirectionSprite.Height == 64)
 	{
-		oRect.X = 12;
-		oRect.Y = 56;
-		oRect.Width = 24;
-		oRect.Height = 16;
+		var oRect = new doufu.Display.Drawing.Rectangle();
+		oRect.X = 5;
+		oRect.Y = 44;
+		oRect.Width = 10;
+		oRect.Height = 6;
+	}
+	else
+	{
+		// use rectangle, faster
+		var oRect = new doufu.Display.Drawing.Rectangle();
+		oRect.X = 6;
+		oRect.Y = 28;
+		oRect.Width = 12;
+		oRect.Height = 8;
+		if (fourDirectionSprite.InstanceOf(doufu.SampleGame.Roles.MaskKillerGiant))
+		{
+			oRect.X = 12;
+			oRect.Y = 56;
+			oRect.Width = 24;
+			oRect.Height = 16;
+		}
 	}
 
 	
@@ -460,6 +471,27 @@ doufu.SampleGame.Items.House1 = function()
 	this.AnimationInfos.Init.FrameNumber = 1;
 	this.AnimationInfos.Init.RepeatNumber = 1;
 	
+	
+	//var v1 = new doufu.Display.Drawing.Vector(6, 97);
+	//var v2 = new doufu.Display.Drawing.Vector(77, 61);
+	//var v3 = new doufu.Display.Drawing.Vector(128, 82);
+	//var v4 = new doufu.Display.Drawing.Vector(53, 120);
+		
+		
+	//var sharp = new doufu.Display.Drawing.Polygon();
+	//sharp.AddArray([v1, v2, v3, v4]);
+	
+	var sharp = new doufu.Display.Drawing.Rectangle();
+	sharp.X = 7;
+	sharp.Y = 81;
+	sharp.Width = 118;
+	sharp.Height = 44;
+	
+	this.Sharp = sharp;
+	
+	this.StandingOffset.X = 84;
+	this.StandingOffset.Y = 82;
+	
 	this.Animation.Play(this.AnimationInfos.Init);
 }
 doufu.SampleGame.Items.Flower = function()
@@ -598,8 +630,8 @@ doufu.SampleGame.Maps.Training = function(oPlayGround)
 	flower.LocationX(447);
 	flower.LocationY(443);
 	var brokenHouse = new doufu.SampleGame.Items.House1();
-	brokenHouse.LocationX(247);
-	brokenHouse.LocationY(340);
+	brokenHouse.LocationX(547);
+	brokenHouse.LocationY(540);
 	
 
 	

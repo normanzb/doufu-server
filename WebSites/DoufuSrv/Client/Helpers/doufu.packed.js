@@ -296,11 +296,11 @@ this.Ctor=function()
 doufu.DesignPattern={};doufu.DesignPattern.Attachable=function(type)
 {doufu.OOP.Class(this);var _collection=new doufu.CustomTypes.Collection(type);this.NewProperty("InnerCollection");this.InnerCollection.Get=function()
 {return _collection;}
-this.Ctor=function()
+this.OnAttach=new doufu.Event.EventHandler(this);this.Ctor=function()
 {if(typeof type==doufu.System.Constants.TYPE_UNDEFINED)
 {doufu.System.ThrowException("type parameter should not be null");}}
 this.Attach=function(obj)
-{_collection.Add(obj);}
+{this.OnAttach.Invoke(obj);_collection.Add(obj);}
 this.Detach=function(obj)
 {_collection.Remove(obj);}
 this.Ctor();}
@@ -1100,7 +1100,7 @@ this.OnPaceControlCompleted.Invoke();doufu.System.Logger.Verbose("doufu.Game.Pac
 {this.Cycle=new doufu.Cycling.Cycle(this.WorkerCallback);this.Cycle.Start();}
 this.Ctor();}
 doufu.Game.Sprites=new Object();doufu.Game.Sprites.Sprite=function()
-{doufu.OOP.Class(this);this.Inherit(doufu.Game.BaseObject);var cycleSkip;var stepLength;var frameCounter=0;var isMovingDest=false;var tmpSpeed=new doufu.Game.Sprites.Sprite.Speed();var tmpVector=new doufu.Display.Drawing.Vector();var tmpClearCube=new doufu.Display.Drawing.Cube();var cubeNextStep=new doufu.Display.Drawing.Cube();var cubeDestination=new doufu.Display.Drawing.Cube();this.IsMoving=false;this.EnableCollision=true;this.Direction=new doufu.Game.Direction();this.Sharp=null;this.InRangeSharp=new doufu.Display.Drawing.Drawable();this.OnConfirmMovable=new doufu.Event.EventHandler(this);this.OnTriggerEvent=new doufu.Event.EventHandler(this);this.MoveTo=function(oDirection,iLength)
+{doufu.OOP.Class(this);this.Inherit(doufu.Game.BaseObject);var cycleSkip;var stepLength;var frameCounter=0;var isMovingDest=false;var tmpSpeed=new doufu.Game.Sprites.Sprite.Speed();var tmpVector=new doufu.Display.Drawing.Vector();var tmpClearCube=new doufu.Display.Drawing.Cube();var cubeNextStep=new doufu.Display.Drawing.Cube();var cubeDestination=new doufu.Display.Drawing.Cube();var drcDest=new doufu.Game.Direction();this.IsMoving=false;this.EnableCollision=true;this.Direction=new doufu.Game.Direction();this.Sharp=null;this.InRangeSharp=new doufu.Display.Drawing.Drawable();this.OnConfirmMovable=new doufu.Event.EventHandler(this);this.OnTriggerEvent=new doufu.Event.EventHandler(this);this.MoveTo=function(oDirection,iLength)
 {if(oDirection==null)
 {throw doufu.System.Exception("oDirection should not be null!");}
 if(!oDirection.InstanceOf(doufu.Game.Direction))
@@ -1113,8 +1113,8 @@ if(lastConfirmResult==false)
 {return;}
 this.OnTriggerEvent.Invoke({Cube:this,Who:this});this.X=cubeNextStep.X;this.Y=cubeNextStep.Y;this.Z=cubeNextStep.Z;}
 this.MoveToDest=function()
-{var drcDest=new doufu.Game.Direction();var x=cubeDestination.X-this.X;var y=cubeDestination.Y-this.Y;var z=cubeDestination.Z-this.Z;var absX=x<0?~x+1:x;var absY=y<0?~y+1:y;var absZ=z<0?~z+1:z;if(absX<stepLength&&absY<stepLength&&z==0)
-{this.StopMoving();return false;}
+{var x=cubeDestination.X-this.X;var y=cubeDestination.Y-this.Y;var z=cubeDestination.Z-this.Z;var absX=x<0?~x+1:x;var absY=y<0?~y+1:y;var absZ=z<0?~z+1:z;globalX=absX;globalY=absY;globalStepLength=stepLength;globalStop=false;if(absX<stepLength&&absY<stepLength&&z==0)
+{globalStop=true;this.StopMoving();return false;}
 drcDest.X(absX>=stepLength?x/absX:0);drcDest.Y(absY>=stepLength?y/absY:0);drcDest.Z(z/absZ);this.Direction=drcDest;return true;}
 this.StartMovingToDest=function(cubeDest,iSpeed)
 {cubeDestination.DeepCopy(cubeDest);if(iSpeed!=null)
@@ -1201,13 +1201,13 @@ return bRet;});var _base_StartMoving=this.OverrideMethod("StartMoving",function(
 {startToPlay.call(this);}
 return true;}
 return false;});var _base_StopMoving=this.OverrideMethod("StopMoving",function()
-{if(this.Direction.X()==-1&&this.Direction.Y()==-1&&this.AnimationInfos.StopLeft!=null)
+{if(this.Animation.AnimationInfo==this.AnimationInfos.MoveLeft&&this.AnimationInfos.StopLeft!=null)
 {this.Animation.Play(this.AnimationInfos.StopLeft);}
-else if(this.Direction.X()==1&&this.Direction.Y()==1&&this.AnimationInfos.StopRight!=null)
+else if(this.Animation.AnimationInfo==this.AnimationInfos.MoveRight&&this.AnimationInfos.StopRight!=null)
 {this.Animation.Play(this.AnimationInfos.StopRight);}
-else if(this.Direction.Y()==1&&this.Direction.X()==-1&&this.AnimationInfos.StopDown!=null)
+else if(this.Animation.AnimationInfo==this.AnimationInfos.MoveDown&&this.AnimationInfos.StopDown!=null)
 {this.Animation.Play(this.AnimationInfos.StopDown);}
-else if(this.Direction.Y()==-1&&this.Direction.X()==1&&this.AnimationInfos.StopUp!=null)
+else if(this.Animation.AnimationInfo==this.AnimationInfos.MoveUp&&this.AnimationInfos.StopUp!=null)
 {this.Animation.Play(this.AnimationInfos.StopUp);}
 _base_StopMoving();});this.Ctor=function()
 {if(oInfoSet!=null)
