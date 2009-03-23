@@ -164,6 +164,54 @@ doufu.SampleGame.Roles.Base = function(bIsometric)
 	}
 }
 
+doufu.SampleGame.Roles.Dot = function()
+{
+	$c(this);
+	
+	this.Inherit(doufu.SampleGame.Roles.Base, [true]);
+	
+	this.Width = 3;
+	this.Height = 3;
+	
+	this.StandingOffset.X = 0;
+	this.StandingOffset.Y = 0;
+	
+	var sharp = new doufu.Display.Drawing.Rectangle();
+	sharp.X = 0;
+	sharp.Y = 0;
+	sharp.Width = 3;
+	sharp.Height = 3;
+	
+	this.Sharp = sharp;
+	
+	this.ImagePath = CONFIG_OTHERS_PATH + "Dot.gif";
+	
+	this.AnimationInfos.Init = new doufu.Game.Animation.Info();
+	this.AnimationInfos.Init.Row = 0;
+	this.AnimationInfos.Init.Column = 0;
+	this.AnimationInfos.Init.FrameNumber = 1;
+	this.AnimationInfos.Init.RepeatNumber = 1;
+	this.AnimationInfos.Init.FrameSkip = 5;
+	
+	this.AnimationInfos.MoveRight = this.AnimationInfos.Init;
+	
+	this.AnimationInfos.MoveLeft = this.AnimationInfos.Init;
+	
+	this.AnimationInfos.MoveUp = this.AnimationInfos.Init;
+	
+	this.AnimationInfos.MoveDown = this.AnimationInfos.Init;
+	
+	this.AnimationInfos.StopRight = this.AnimationInfos.Init;
+
+	this.AnimationInfos.StopLeft = this.AnimationInfos.Init;
+	
+	this.AnimationInfos.StopUp = this.AnimationInfos.Init;
+	
+	this.AnimationInfos.StopDown = this.AnimationInfos.Init;
+	
+	this.Animation.Play(this.AnimationInfos.Init);
+}
+
 doufu.SampleGame.Roles.Naked = function()
 {
 	$c(this);
@@ -458,8 +506,8 @@ doufu.SampleGame.Items.House1 = function()
 	this.Width = 142;
 	this.Height = 124;
 	
-	this.StandingOffset.X = 12;
-	this.StandingOffset.Y = 28;
+	this.StandingOffset.X = 74;
+	this.StandingOffset.Y = 81;
 	
 	this.ImagePath = CONFIG_HOUSES_PATH + "House01.gif";
 	
@@ -472,14 +520,14 @@ doufu.SampleGame.Items.House1 = function()
 	this.AnimationInfos.Init.RepeatNumber = 1;
 	
 	
-	//var v1 = new doufu.Display.Drawing.Vector(6, 97);
-	//var v2 = new doufu.Display.Drawing.Vector(77, 61);
-	//var v3 = new doufu.Display.Drawing.Vector(128, 82);
-	//var v4 = new doufu.Display.Drawing.Vector(53, 120);
+	var v1 = new doufu.Display.Drawing.Vector(5, 96);
+	var v2 = new doufu.Display.Drawing.Vector(11, 81);
+	var v3 = new doufu.Display.Drawing.Vector(80, 53);
+	var v4 = new doufu.Display.Drawing.Vector(130, 75);
+	var v5 = new doufu.Display.Drawing.Vector(53, 133);
 		
-		
-	//var sharp = new doufu.Display.Drawing.Polygon();
-	//sharp.AddArray([v1, v2, v3, v4]);
+	var plySharp = new doufu.Display.Drawing.Polygon();
+	plySharp.AddArray([v1, v2, v3, v4, v5]);
 	
 	var sharp = new doufu.Display.Drawing.Rectangle();
 	sharp.X = 7;
@@ -487,7 +535,7 @@ doufu.SampleGame.Items.House1 = function()
 	sharp.Width = 118;
 	sharp.Height = 44;
 	
-	this.Sharp = sharp;
+	this.Sharp = plySharp;
 	
 	this.StandingOffset.X = 84;
 	this.StandingOffset.Y = 82;

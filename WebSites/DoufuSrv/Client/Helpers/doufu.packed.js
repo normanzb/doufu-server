@@ -1113,8 +1113,8 @@ if(lastConfirmResult==false)
 {return;}
 this.OnTriggerEvent.Invoke({Cube:this,Who:this});this.X=cubeNextStep.X;this.Y=cubeNextStep.Y;this.Z=cubeNextStep.Z;}
 this.MoveToDest=function()
-{var x=cubeDestination.X-this.X;var y=cubeDestination.Y-this.Y;var z=cubeDestination.Z-this.Z;var absX=x<0?~x+1:x;var absY=y<0?~y+1:y;var absZ=z<0?~z+1:z;globalX=absX;globalY=absY;globalStepLength=stepLength;globalStop=false;if(absX<stepLength&&absY<stepLength&&z==0)
-{globalStop=true;this.StopMoving();return false;}
+{var x=cubeDestination.X-this.X;var y=cubeDestination.Y-this.Y;var z=cubeDestination.Z-this.Z;var absX=x<0?~x+1:x;var absY=y<0?~y+1:y;var absZ=z<0?~z+1:z;if(absX<stepLength&&absY<stepLength&&z==0)
+{this.StopMoving();return false;}
 drcDest.X(absX>=stepLength?x/absX:0);drcDest.Y(absY>=stepLength?y/absY:0);drcDest.Z(z/absZ);this.Direction=drcDest;return true;}
 this.StartMovingToDest=function(cubeDest,iSpeed)
 {cubeDestination.DeepCopy(cubeDest);if(iSpeed!=null)
@@ -1314,12 +1314,12 @@ if(this.Sharps.Length()>0)
 else if(doufu.Game.Helpers.IsCollided(tmpColideDrawable1,this.Sharps.Items(k),obj.Direction))
 {return false;}}}
 for(var i=0;i<this.LinkedPlayGround.GameObjects().Length();i++)
-{if(this.LinkedPlayGround.GameObjects().Items(i).InstanceOf(doufu.Game.Sprites.Sprite)&&this.LinkedPlayGround.GameObjects().Items(i).Sharp!=null)
-{if(obj.Sharp!=this.LinkedPlayGround.GameObjects().Items(i).Sharp)
-{tmpCube.DeepCopy(this.LinkedPlayGround.GameObjects().Items(i));if(this.LinkedPlayGround.GameObjects().Items(i).Sharp.InstanceOf(doufu.Display.Drawing.Rectangle))
-{tmpRectangle2.DeepCopy(this.LinkedPlayGround.GameObjects().Items(i).Sharp);tmpRectangle2.X+=tmpCube.X;tmpRectangle2.Y+=tmpCube.Y;tmpColideDrawable2=tmpRectangle2;}
-else if(this.LinkedPlayGround.GameObjects().Items(i).Sharp.InstanceOf(doufu.Display.Drawing.Polygon))
-{tmpPolygon2.DeepCopy(this.LinkedPlayGround.GameObjects().Items(i).Sharp);for(var j=0;i<tmpPolygon2.Length();i++)
+{var gameObject=this.LinkedPlayGround.GameObjects().Items(i);if(gameObject.InstanceOf(doufu.Game.Sprites.Sprite)&&gameObject.Sharp!=null)
+{if(obj.Sharp!=gameObject.Sharp)
+{tmpCube.DeepCopy(gameObject);if(gameObject.Sharp.InstanceOf(doufu.Display.Drawing.Rectangle))
+{tmpRectangle2.DeepCopy(gameObject.Sharp);tmpRectangle2.X+=tmpCube.X;tmpRectangle2.Y+=tmpCube.Y;tmpColideDrawable2=tmpRectangle2;}
+else if(gameObject.Sharp.InstanceOf(doufu.Display.Drawing.Polygon))
+{tmpPolygon2.DeepCopy(gameObject.Sharp);for(var j=0;j<tmpPolygon2.Length();j++)
 {tmpPolygon2.Items(j).X+=tmpCube.X;tmpPolygon2.Items(j).Y+=tmpCube.Y;}
 tmpColideDrawable2=tmpPolygon2;}
 if(tmpCube.Z==obj.Cube.Z&&doufu.Game.Helpers.IsCollided(tmpColideDrawable1,tmpColideDrawable2))

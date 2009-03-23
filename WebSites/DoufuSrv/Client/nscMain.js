@@ -46,14 +46,14 @@ tmpMsg.Message = doufu.System.MessageConstants.DISPLAY_RENDER;
 
 // 0 - Sprite moving
 // 1 - Message typing
-var keyboardMode = 0;
+var keyboardMode = 1;
 
 // Game looping timeout, decide how fast this game runs.
 var loopTimeout = 70;
 var sUsername = "";
 
 // main chars
-var player = new doufu.SampleGame.Roles.Naked();
+var player = null;
 
 // char array
 var sprChars = {};
@@ -61,31 +61,39 @@ var sprChars = {};
 // specify what to stop main loop
 var __Global_MainLoop_Stop = false;
 
+var br = {};
+br.Shared = {};
+
 // test functions
 // send initialize information to server
-function t_init(user, pass)
+function init(user, pass)
 {
 	doufu.SampleGame.ServiceMapper.Authenticate(user,pass,function(sender, args){
 		var tmp = doufu.Http.JSON.Parse(args.ResponseText);
 			
 		if (tmp.Return == true)
 		{
-			doufu.System.Logger.Debug("t_init() - Authenticated...");
+			doufu.System.Logger.Debug("init() - Authenticated...");
 			
 			doufu.SampleGame.ServiceMapper.Initialize(GeneralPlayGroundManager.Camera(),
 				function(sender, args){
 					var tmp = doufu.Http.JSON.Parse(args.ResponseText);
 					if (tmp.Return == true)
 					{
-						doufu.System.Logger.Debug("t_init() - Initialized...");
-							doufu.SampleGame.ServiceMapper.MoveTo(player,
+						doufu.System.Logger.Debug("init() - Initialized...");
+						
+						initUser(user);
+						
+						initKeyboard();
+						
+						doufu.SampleGame.ServiceMapper.MoveTo(player,
 							function(sender, args){
 								var tmp = doufu.Http.JSON.Parse(args.ResponseText);
 								if (tmp.Return == true)
 								{
-									doufu.System.Logger.Debug("t_init() - Moved...");
-									doufu.System.Logger.Debug("t_init() - Starting looping...");
-									StartLoops();
+									doufu.System.Logger.Debug("init() - Moved...");
+									doufu.System.Logger.Debug("init() - Starting looping...");
+									startLoops();
 								}
 							},
 							function(sender, args){alert(args.ResponseText)});
@@ -284,7 +292,7 @@ function syncLoop()
 }
 
 // Start all loops to start the game.
-function StartLoops()
+function startLoops()
 {
 	// main loop
 	__nsc_MainLoop();
@@ -293,6 +301,30 @@ function StartLoops()
 	
 	//reportLoop();
 	syncLoop();
+}
+
+function initUser(name)
+{
+	
+	if (name.toLowerCase() == "debug")
+	{
+		player = new doufu.SampleGame.Roles.Dot();
+	}
+	else
+	{
+		player = new doufu.SampleGame.Roles.Naked();
+	}
+	
+	player.Name = name;
+	
+	sprChars[name] = player;
+	
+	player.Z = 0;
+	player.LocationX(320);
+	player.LocationY(470);
+	
+	GeneralPlayGroundManager.Camera().Trace(player);
+	GeneralPlayGroundManager.InsertObject(player);
 }
 
 ////////////////////
@@ -312,26 +344,19 @@ function StartLoops()
 // the ground which is a 2 dimension map, if the character want to fly, just set its z index to the flying
 // on the sky range. the movement caculator just ignore the z index.
 
-player.Z = 0;
-player.LocationX(320);
-player.LocationY(470);
-player.Attributes = {};
-player.Attributes.GoodGuy = true;
 
 mapJungle = new doufu.SampleGame.Maps.Training(GeneralPlayGroundManager);
 mapJungle.Initialize();
 
 GeneralPlayGroundManager.Camera().SmoothTracing = true;
 GeneralPlayGroundManager.Camera().SkipFrame = 0;
-GeneralPlayGroundManager.Camera().Trace(player);
-
-GeneralPlayGroundManager.InsertObject(player);
 
 //player.StartMoving(new doufu.Game.Direction(16), 49)
 //====================
 
 /////////////
 // Initialize UI
+
 uiUserPanel = new doufu.SampleGame.UI.UserPanel();
 uiUserPanel.OnConfirmed.Attach(new doufu.Event.CallBack(function(sender, args)
 {
@@ -347,12 +372,9 @@ uiLogin.OnConfirmed.Attach(new doufu.Event.CallBack(function(sender, args)
 {
 	// set current user name
 	sUsername = args.User;
-	player.Name = sUsername;
-	
-	sprChars[sUsername] = player;
-	
+
 	// initialize this user
-	t_init(args.User, args.Pass);
+	init(args.User, args.Pass);
 }, this));
 
 uiController = new doufu.SampleGame.UI.Controller();
@@ -363,59 +385,63 @@ uiController.Attach(uiLogin);
 ///////////////
 // Initialize keyboard 
 
-var keyLeft = new doufu.Keyboard.Key("a");
-var keyRight = new doufu.Keyboard.Key("d");
-var keyUp = new doufu.Keyboard.Key("w");
-var keyDown = new doufu.Keyboard.Key("s");
-
-// mapping keys
-var keyUpCallback = new doufu.Event.CallBack(function(sender, args)
+function initKeyboard()
 {
-	if (!keyDown.IsKeyDown &&
-		!keyUp.IsKeyDown &&
-		!keyLeft.IsKeyDown &&
-		!keyRight.IsKeyDown &&
-		 keyboardMode == 0)
-	{
-		player.StopMoving();
-	}
-},this);
+	keyboardMode = 0;
+	var keyLeft = new doufu.Keyboard.Key("a");
+	var keyRight = new doufu.Keyboard.Key("d");
+	var keyUp = new doufu.Keyboard.Key("w");
+	var keyDown = new doufu.Keyboard.Key("s");
 
-keyLeft.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
-{
-	if (args.StatusChanged && keyboardMode == 0)
+	// mapping keys
+	var keyUpCallback = new doufu.Event.CallBack(function(sender, args)
 	{
-		player.WalkWest();
-	}
-},keyLeft));
-keyLeft.OnKeyUp.Attach(keyUpCallback);
+		if (!keyDown.IsKeyDown &&
+			!keyUp.IsKeyDown &&
+			!keyLeft.IsKeyDown &&
+			!keyRight.IsKeyDown &&
+			 keyboardMode == 0)
+		{
+			player.StopMoving();
+		}
+	},this);
 
-keyRight.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
-{
-	if (args.StatusChanged && keyboardMode == 0)
+	keyLeft.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
 	{
-		player.WalkEast();
-	}
-},keyRight));
-keyRight.OnKeyUp.Attach(keyUpCallback);
+		if (args.StatusChanged && keyboardMode == 0)
+		{
+			player.WalkWest();
+		}
+	},keyLeft));
+	keyLeft.OnKeyUp.Attach(keyUpCallback);
 
-keyUp.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
-{
-	if (args.StatusChanged && keyboardMode == 0)
+	keyRight.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
 	{
-		player.WalkNorth();
-	}
-},keyUp));
-keyUp.OnKeyUp.Attach(keyUpCallback);
+		if (args.StatusChanged && keyboardMode == 0)
+		{
+			player.WalkEast();
+		}
+	},keyRight));
+	keyRight.OnKeyUp.Attach(keyUpCallback);
 
-keyDown.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
-{
-	if (args.StatusChanged && keyboardMode == 0)
+	keyUp.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
 	{
-		player.WalkSouth();
-	}
-},keyDown));
-keyDown.OnKeyUp.Attach(keyUpCallback);
+		if (args.StatusChanged && keyboardMode == 0)
+		{
+			player.WalkNorth();
+		}
+	},keyUp));
+	keyUp.OnKeyUp.Attach(keyUpCallback);
+
+	keyDown.OnKeyDown.Attach(new doufu.Event.CallBack(function(sender, args)
+	{
+		if (args.StatusChanged && keyboardMode == 0)
+		{
+			player.WalkSouth();
+		}
+	},keyDown));
+	keyDown.OnKeyUp.Attach(keyUpCallback);
+}
 
 
 // Release when exit
