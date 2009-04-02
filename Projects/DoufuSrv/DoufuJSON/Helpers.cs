@@ -40,7 +40,7 @@ namespace Doufu.JSON
             /// Using this.Context to respond specified json data
             /// </summary>
             /// <param name="oJson"></param>
-            public void RespondJSON(Doufu.JSON.IJSONObject oJson)
+            public void RespondJSON(IJSONObject oJson)
             {
                 RespondJSON(oJson, null);
             }
@@ -50,18 +50,18 @@ namespace Doufu.JSON
             /// </summary>
             /// <param name="oJson"></param>
             /// <param name="sCallback">Callback function name</param>
-            public void RespondJSON(Doufu.JSON.IJSONObject oJson, string sCallback)
+            public void RespondJSON(IJSONObject oJson, string sCallback)
             {
                 this.Context.Response.Buffer = true;
 
                 string retJString = string.Empty;
                 if (sCallback == null || sCallback.Trim() == string.Empty)
                 {
-                    retJString = oJson.ToString();
+                    retJString = oJson.ToJSON();
                 }
                 else
                 {
-                    retJString = sCallback + "(" + oJson.ToString() + ");" + "\r\n\r\n";
+                    retJString = sCallback + "(" + oJson.ToJSON() + ");" + "\r\n\r\n";
                     
                 }
                 
@@ -74,7 +74,7 @@ namespace Doufu.JSON
             /// Response json data but not close the response
             /// </summary>
             /// <param name="oJson"></param>
-            public void RespondComet(Doufu.JSON.IJSONObject oJson)
+            public void RespondComet(IJSONObject oJson)
             {
                 this.RespondComet(oJson, null);
             }
@@ -83,17 +83,17 @@ namespace Doufu.JSON
             /// Response json data but not close the response
             /// </summary>
             /// <param name="oJson"></param>
-            public void RespondComet(Doufu.JSON.IJSONObject oJson, string sCallback)
+            public void RespondComet(IJSONObject oJson, string sCallback)
             {
                 this.Context.Response.Buffer = false;
 
                 if (sCallback != null)
                 {
-                    this.Context.Response.Write(sCallback + "(" + oJson.ToString() + ");" + "\r\n\r\n");
+                    this.Context.Response.Write(sCallback + "(" + oJson.ToJSON() + ");" + "\r\n\r\n");
                 }
                 else
                 {
-                    this.Context.Response.Write(oJson.ToString() + "\r\n\r\n");
+                    this.Context.Response.Write(oJson.ToJSON() + "\r\n\r\n");
                 }
 
                 this.Context.Response.Flush();
@@ -137,7 +137,7 @@ namespace Doufu.JSON
         /// <param name="bAllowNonStandardVariableName">True to allow non-standard variable name, for example {"foo\0\nfoo":"str"} is allowed.
         /// Otherwise incorrect format exception will be thrown.</param>
         /// <returns>Return a doufu json object</returns>
-        public static Doufu.JSON.Object<IJSONObject> Parse(string sJSON)
+        public static JObject Parse(string sJSON)
         {
             return Parse(sJSON, false);
         }
@@ -149,7 +149,7 @@ namespace Doufu.JSON
         /// <param name="bAllowNonStandardVariableName">True to allow non-standard variable name, for example {"foo\0\nfoo":"str"} is allowed.
         /// Otherwise incorrect format exception will be thrown.</param>
         /// <returns>Return a doufu json object</returns>
-        public static Doufu.JSON.Object<IJSONObject> Parse(string sJSON, bool bAllowNonStandardVariableName)
+        public static JObject Parse(string sJSON, bool bAllowNonStandardVariableName)
         {
             sJSON = sJSON.Trim();
 
@@ -163,7 +163,7 @@ namespace Doufu.JSON
 
             sJSON = sJSON.Trim();
 
-            Object<IJSONObject> jsonRet = new Object<IJSONObject>();
+            JObject jsonRet = new JObject();
             Regex reVariableName = new Regex(@"^[""|'][a-zA-Z$]+[a-zA-Z0-9_\$]*[""|']$", RegexOptions.None);
 
             if (bAllowNonStandardVariableName)
@@ -312,7 +312,7 @@ namespace Doufu.JSON
                             string sFinalValue = sValue.ToString();
                             sFinalValue = sFinalValue.Replace("\\\"", "\"");
                             sFinalValue = sFinalValue.Replace("\\\'", "\'");
-                            oVariableValue = new String(sFinalValue);
+                            oVariableValue = new JString(sFinalValue);
 
                             // add value
                             jsonRet.Items.Add(sVariableName, oVariableValue);
@@ -352,7 +352,7 @@ namespace Doufu.JSON
                         if (bFound == true)
                         {
 
-                            oVariableValue = new Boolean(bool.Parse(sBool.ToString()));
+                            oVariableValue = new JBoolean(bool.Parse(sBool.ToString()));
 
                             // add value
                             jsonRet.Items.Add(sVariableName, oVariableValue);
@@ -391,7 +391,7 @@ namespace Doufu.JSON
 
                         if (j == sJSON.Length || sJSON[j] == ',' || sJSON[j] == ' ')
                         {
-                            oVariableValue = new Number(Int32.Parse(sNumber.ToString()));
+                            oVariableValue = new JNumber(Int32.Parse(sNumber.ToString()));
 
                             // add value
                             jsonRet.Items.Add(sVariableName, oVariableValue);

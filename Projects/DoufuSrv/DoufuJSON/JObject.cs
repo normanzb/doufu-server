@@ -4,8 +4,7 @@ using System.Text;
 
 namespace Doufu.JSON
 {
-    public interface IJSONObject
+    public class JObject: JObjectBase<IJSONObject>
     {
-        string ToJSON();
     }
 }

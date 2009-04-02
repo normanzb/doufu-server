@@ -4,15 +4,15 @@ using System.Text;
 
 namespace Doufu.JSON
 {
-    public class Boolean:Object<System.Boolean>, IJSONObject
+    public class JBoolean:JObjectBase<System.Boolean>, IJSONObject
     {
 
-        public Boolean()
+        public JBoolean()
         {
             this.Value = false;
         }
 
-        public Boolean(bool value)
+        public JBoolean(bool value)
         {
             this.Value = value;
         }
@@ -31,9 +31,14 @@ namespace Doufu.JSON
             }
         }
 
-        public override string ToString()
+        public override string ToJSON()
         {
             return this.Value.ToString().ToLower();
+        }
+
+        public static implicit operator JBoolean(bool boolean)
+        {
+            return new JBoolean(boolean);
         }
     }
 }

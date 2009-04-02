@@ -4,15 +4,15 @@ using System.Text;
 
 namespace Doufu.JSON
 {
-    public class String : Doufu.JSON.Object<string>, IJSONObject
+    public class JString : Doufu.JSON.JObjectBase<string>, IJSONObject
     {
 
-        public String(string value)
+        public JString(string value)
         {
             this.Value = value;
         }
 
-        public String()
+        public JString()
         {
 
         }
@@ -31,9 +31,15 @@ namespace Doufu.JSON
             }
         }
 
-        public override string ToString()
+        public override string ToJSON()
         {
             return "\"" + this.Value.ToString().Replace("\"", "\\\"") + "\"";
         }
+
+        public static implicit operator JString(string sString)
+        {
+            return new JString(sString);
+        }
+
     }
 }

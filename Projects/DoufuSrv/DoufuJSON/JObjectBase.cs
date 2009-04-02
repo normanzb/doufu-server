@@ -9,7 +9,7 @@ namespace Doufu.JSON
     /// The base object for all Doufu.JSON objects
     /// </summary>
     /// <typeparam name="T">Specify the corresponding c# object</typeparam>
-    public class Object<T>: IJSONObject
+    public class JObjectBase<T>: IJSONObject
     {
         private Dictionary<string, IJSONObject> _items = new Dictionary<string, IJSONObject>();
         private T _value;
@@ -34,11 +34,23 @@ namespace Doufu.JSON
             }
         }
 
+        public virtual IJSONObject this[string key]
+        {
+            get
+            {
+                return this.Items[key];
+            }
+            set
+            {
+                this.Items[key] = value;
+            }
+        }
+
         /// <summary>
         /// Stringify this object to JSON string.
         /// </summary>
         /// <returns>JSON string</returns>
-        public override string ToString()
+        public virtual string ToJSON()
         {
             string subObjStr = string.Empty;
             bool firstItem = true;
@@ -57,7 +69,7 @@ namespace Doufu.JSON
 
                 string skey = kv.Key.ToString().Trim() == string.Empty ? "\"\"" : kv.Key.ToString().Trim();
 
-                subObjStr += System.String.Format(@"""{0}"": {1}", skey, kv.Value.ToString());
+                subObjStr += System.String.Format(@"""{0}"": {1}", skey, kv.Value.ToJSON());
 
                 firstItem = false;
             }

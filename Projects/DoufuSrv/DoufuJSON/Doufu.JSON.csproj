@@ -34,14 +34,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Array.cs" />
-    <Compile Include="Boolean.cs" />
+    <Compile Include="JArray.cs" />
+    <Compile Include="JBoolean.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="IJSON.cs" />
-    <Compile Include="Number.cs" />
-    <Compile Include="Object.cs" />
+    <Compile Include="JNumber.cs" />
+    <Compile Include="JObject.cs" />
+    <Compile Include="JObjectBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="String.cs" />
+    <Compile Include="JString.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
