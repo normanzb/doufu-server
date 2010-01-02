@@ -53,7 +53,7 @@ doufu.SampleGame.Roles.Helpers.SetPolygon = function(fourDirectionSprite)
 	}
 
 	
-	fourDirectionSprite.Sharp = oRect;
+	fourDirectionSprite.Shape = oRect;
 }
 
 doufu.SampleGame.Roles.Helpers.SetAnimation = function(fourDirectionSprite)
@@ -176,13 +176,13 @@ doufu.SampleGame.Roles.Dot = function()
 	this.StandingOffset.X = 0;
 	this.StandingOffset.Y = 0;
 	
-	var sharp = new doufu.Display.Drawing.Rectangle();
-	sharp.X = 0;
-	sharp.Y = 0;
-	sharp.Width = 3;
-	sharp.Height = 3;
+	var shape = new doufu.Display.Drawing.Rectangle();
+	shape.X = 0;
+	shape.Y = 0;
+	shape.Width = 3;
+	shape.Height = 3;
 	
-	this.Sharp = sharp;
+	this.Shape = shape;
 	
 	this.ImagePath = CONFIG_OTHERS_PATH + "Dot.gif";
 	
@@ -379,7 +379,7 @@ doufu.SampleGame.Roles.MaskKiller = function()
 		oRect.Y = 56;
 		oRect.Width = 24;
 		oRect.Height = 16;
-		this.Sharp = oRect;
+		this.Shape = oRect;
 		
 		this.Animation.Play(this.AnimationInfos.Init);
 	}
@@ -526,16 +526,16 @@ doufu.SampleGame.Items.House1 = function()
 	var v4 = new doufu.Display.Drawing.Vector(130, 75);
 	var v5 = new doufu.Display.Drawing.Vector(53, 133);
 		
-	var plySharp = new doufu.Display.Drawing.Polygon();
-	plySharp.AddArray([v1, v2, v3, v4, v5]);
+	var plyShape = new doufu.Display.Drawing.Polygon();
+	plyShape.AddArray([v1, v2, v3, v4, v5]);
 	
-	var sharp = new doufu.Display.Drawing.Rectangle();
-	sharp.X = 7;
-	sharp.Y = 81;
-	sharp.Width = 118;
-	sharp.Height = 44;
+	var shape = new doufu.Display.Drawing.Rectangle();
+	shape.X = 7;
+	shape.Y = 81;
+	shape.Width = 118;
+	shape.Height = 44;
 	
-	this.Sharp = plySharp;
+	this.Shape = plyShape;
 	
 	this.StandingOffset.X = 84;
 	this.StandingOffset.Y = 82;
@@ -798,7 +798,7 @@ doufu.SampleGame.Maps.LonglyIsland = function(oPlayGround)
 	var p4 = new doufu.Display.Drawing.Polygon();
 	p4.AddArray([v4, v1]);
 	
-	this.Sharps.AddArray([p1, p2, p3, p4]);
+	this.Shapes.AddArray([p1, p2, p3, p4]);
 	
 	// adding characters
 	var myTrigger = new doufu.Game.EventTrigger();

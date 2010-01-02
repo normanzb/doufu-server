@@ -386,16 +386,7 @@ this.Ctor();}
 doufu.Browser.Helpers=new Object();doufu.Browser.Helpers.SPACE_NAME="doufu.Browser.Helpers";doufu.Browser.Helpers.CreateOverflowHiddenDiv=function(sDivID,elmtParent,iWidth,iHeight)
 {var borderWidth=1;if(sDivID==null||elmtParent==null)
 {throw doufu.System.Exception("sDivID and elmtParent were required!");}
-var retDiv;retDiv=doufu.Browser.DOM.CreateElement("div").Native();retDiv.setAttribute("id",sDivID);retDiv.style.overflow="hidden";retDiv.style.width=iWidth+"px";retDiv.style.height=iHeight+"px";retDiv.style.border=borderWidth+"px solid #000";elmtParent.appendChild(retDiv);if(doufu.Browser.DOM.CompatibleMode()==doufu.Browser.DOM.CompatibleMode.CSS1_COMPAT)
-{retDiv.style.position="relative";}
-else if(doufu.Browser.DOM.CompatibleMode()==doufu.Browser.DOM.CompatibleMode.BACK_COMPAT)
-{}
-else
-{doufu.System.APIs.FunctionHooker("appendChild",function(obj)
-{obj.style.clip="rect(0px "+
-doufu.System.Convert.ToString(retDiv.clientLeft+iWidth)+"px "+
-iHeight+"px "+retDiv.clientLeft+"px)";obj.style.marginTop="9px";obj.style.marginLeft="8px";},retDiv);}
-return retDiv;}
+var retDiv;retDiv=doufu.Browser.DOM.CreateElement("div").Native();retDiv.setAttribute("id",sDivID);retDiv.style.overflow="hidden";retDiv.style.width=iWidth+"px";retDiv.style.height=iHeight+"px";retDiv.style.border=borderWidth+"px solid #000";retDiv.style.position="relative";elmtParent.appendChild(retDiv);return retDiv;}
 doufu.Browser.Helpers.GetRelativeCoordinates=function(event,reference){var x,y;event=event||window.event;var el=event.target||event.srcElement;if(!window.opera&&typeof event.offsetX!='undefined'){var pos={x:event.offsetX,y:event.offsetY};var e=el;while(e){e.mouseX=pos.x;e.mouseY=pos.y;pos.x+=e.offsetLeft;pos.y+=e.offsetTop;e=e.offsetParent;}
 var e=reference;var offset={x:0,y:0}
 while(e){if(typeof e.mouseX!='undefined'){x=e.mouseX-offset.x;y=e.mouseY-offset.y;break;}
@@ -403,8 +394,18 @@ offset.x+=e.offsetLeft;offset.y+=e.offsetTop;e=e.offsetParent;}
 e=el;while(e){e.mouseX=undefined;e.mouseY=undefined;e=e.offsetParent;}}
 else{var pos=getAbsolutePosition(reference);x=event.pageX-pos.x;y=event.pageY-pos.y;}
 return{x:x,y:y};}
-doufu.Browser.Helpers.GetAbsolutePosition=function(element){var r=new doufu.Display.Drawing.Rectangle();r.X=element.offsetLeft;r.Y=element.offsetTop;if(element.offsetParent){var tmp=doufu.Browser.Helpers.GetAbsolutePosition(element.offsetParent);r.X+=tmp.X;r.Y+=tmp.Y;}
+doufu.Browser.Helpers.GetAbsolutePosition=function(element){var r=new doufu.Display.Drawing.Rectangle();if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer&&doufu.Browser.BrowserDetect.Version<=7)
+{r.X=element.offsetLeft;r.Y=element.offsetTop;if(element.offsetParent)
+{var tmp=doufu.Browser.Helpers.GetAbsolutePosition(element.offsetParent);r.X+=tmp.X;r.Y+=tmp.Y;}}
+else
+{r.X=element.offsetLeft;r.Y=element.offsetTop;}
 return r;}
+doufu.Browser.Helpers.GetMousePos=function(evnt)
+{e=evnt||window.event;var cursor={X:0,Y:0};if(e.pageX||e.pageY){cursor.X=e.pageX;cursor.Y=e.pageY;}
+else{var de=document.documentElement;var b=document.body;cursor.X=e.clientX+
+(de.scrollLeft||b.scrollLeft)-(de.clientLeft||0);cursor.Y=e.clientY+
+(de.scrollTop||b.scrollTop)-(de.clientTop||0);}
+return cursor;}
 doufu.Browser.Helpers.EnableBackgroundCache=function(bEnable)
 {if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer)
 {try
@@ -567,7 +568,7 @@ _onfocus=nativeEventArgProcessor(this.OnFocus.Invoke);doufu.Browser.Helpers.Atta
 return this.Ctor();}
 doufu.Browser.Element._elementBuffer=[];doufu.Browser.Element._elementBuffer.GetBufferElement=function(_native)
 {for(var i=0;i<doufu.Browser.Element._elementBuffer.length;i++)
-{if(doufu.Browser.Element._elementBuffer[i].Native()==_native)
+{if(doufu.Browser.Element._elementBuffer[i].Native()===_native)
 {return doufu.Browser.Element._elementBuffer[i];}}
 return null;}
 doufu.Browser.DOMBase=function(docRef)
@@ -939,7 +940,7 @@ this.OnInsertObject=new doufu.Event.EventHandler(this);var MovableConfirm=new do
 {if(this.CurrentMap()!=null)
 {return this.CurrentMap().ConfirmMovable(obj);}
 return true;},this);var AddMovableConfirm=new doufu.Event.CallBack(function(sender,obj)
-{if(obj.InstanceOf(doufu.Game.Sprites.Sprite)&&typeof obj.Sharp!=doufu.System.Constants.TYPE_UNDEFINED)
+{if(obj.InstanceOf(doufu.Game.Sprites.Sprite)&&typeof obj.Shape!=doufu.System.Constants.TYPE_UNDEFINED)
 {obj.OnConfirmMovable.Attach(MovableConfirm);}},this)
 this.InsertObject=function(obj)
 {this.OnInsertObject.Invoke(obj);_gameObjects.Add(obj);if(obj.Children.Length()!=0)
@@ -976,10 +977,10 @@ doufu.Game.PlayGround.Camera=function()
 {if(!this.SmoothTracing)
 {this.X=this.TracedObject.X+this.TracedObject.Width/2-this.Width/2;this.Y=doufu.Game.PlayGround.Helpers.RealYToScreenY(this.TracedObject.Y+this.TracedObject.Height/2,true)-this.Height/2;}
 else if(skipFrameCount%(this.SkipFrame+1)==0)
-{var destX=this.TracedObject.X+this.TracedObject.Width/2-this.Width/2;var destY=doufu.Game.PlayGround.Helpers.RealYToScreenY(this.TracedObject.Y+this.TracedObject.Height/2,true)-this.Height/2;this.X+=Math.ceil((destX-this.X)/2);this.Y+=Math.ceil((destY-this.Y)/2);}
+{var destX=this.TracedObject.X+this.TracedObject.Width/2-this.Width/2;var destY=doufu.Game.PlayGround.Helpers.RealYToScreenY(this.TracedObject.Y+this.TracedObject.Height/2,true)-this.Height/2;var slipX=Math.ceil((destX-this.X)/2);var slipY=Math.ceil((destY-this.Y)/2);this.X+=slipX;this.Y+=slipY;if(slipX==0&&slipY==0)
+{this.OnLocked.Invoke();}}
 skipFrameCount++;if(skipFrameCount==10000000)
-{skipFrameCount=0;}}},this)
-this.IsTracing=false;this.SmoothTracing=false;this.SkipFrame=0;this.TracedObject=null;this.Trace=function(gameObj)
+{skipFrameCount=0;}}},this);this.OnLocked=new doufu.Event.EventHandler(this);this.IsTracing=false;this.SmoothTracing=false;this.SkipFrame=0;this.TracedObject=null;this.Trace=function(gameObj)
 {if(this.IsTracing)
 {this.StopTrace();}
 doufu.System.Logger.Debug("doufu.Game.PlayGround.Camera::Trace(): Attach OnPaceControlCompleted event.");doufu.Game.PaceController.OnPaceControlCompleted.Attach(callbackOffsetCaculation);this.IsTracing=true;this.TracedObject=gameObj;}
@@ -1100,13 +1101,13 @@ this.OnPaceControlCompleted.Invoke();doufu.System.Logger.Verbose("doufu.Game.Pac
 {this.Cycle=new doufu.Cycling.Cycle(this.WorkerCallback);this.Cycle.Start();}
 this.Ctor();}
 doufu.Game.Sprites=new Object();doufu.Game.Sprites.Sprite=function()
-{doufu.OOP.Class(this);this.Inherit(doufu.Game.BaseObject);var cycleSkip;var stepLength;var frameCounter=0;var isMovingDest=false;var tmpSpeed=new doufu.Game.Sprites.Sprite.Speed();var tmpVector=new doufu.Display.Drawing.Vector();var tmpClearCube=new doufu.Display.Drawing.Cube();var cubeNextStep=new doufu.Display.Drawing.Cube();var cubeDestination=new doufu.Display.Drawing.Cube();var drcDest=new doufu.Game.Direction();this.IsMoving=false;this.EnableCollision=true;this.Direction=new doufu.Game.Direction();this.Sharp=null;this.InRangeSharp=new doufu.Display.Drawing.Drawable();this.OnConfirmMovable=new doufu.Event.EventHandler(this);this.OnTriggerEvent=new doufu.Event.EventHandler(this);this.MoveTo=function(oDirection,iLength)
+{doufu.OOP.Class(this);this.Inherit(doufu.Game.BaseObject);var cycleSkip;var stepLength;var frameCounter=0;var isMovingDest=false;var tmpSpeed=new doufu.Game.Sprites.Sprite.Speed();var tmpVector=new doufu.Display.Drawing.Vector();var tmpClearCube=new doufu.Display.Drawing.Cube();var cubeNextStep=new doufu.Display.Drawing.Cube();var cubeDestination=new doufu.Display.Drawing.Cube();var drcDest=new doufu.Game.Direction();this.IsMoving=false;this.EnableCollision=true;this.Direction=new doufu.Game.Direction();this.Shape=null;this.InRangeShape=new doufu.Display.Drawing.Drawable();this.OnConfirmMovable=new doufu.Event.EventHandler(this);this.OnTriggerEvent=new doufu.Event.EventHandler(this);this.MoveTo=function(oDirection,iLength)
 {if(oDirection==null)
 {throw doufu.System.Exception("oDirection should not be null!");}
 if(!oDirection.InstanceOf(doufu.Game.Direction))
 {throw doufu.System.Exception("oDirection should be a instance of doufu.Game.Direction!");}
-var lastConfirmResult=false;cubeNextStep.DeepCopy(tmpClearCube);cubeNextStep.X=this.X+oDirection.X()*iLength;cubeNextStep.Y=this.Y+oDirection.Y()*iLength;cubeNextStep.Z=this.Z+oDirection.Z()*iLength;if(this.Sharp!=null&&this.EnableCollision==true)
-{tmpVector.X=oDirection.X()*iLength;tmpVector.Y=oDirection.Y()*iLength;lastConfirmResult=this.OnConfirmMovable.Invoke({Cube:cubeNextStep,Sharp:this.Sharp,Velocity:tmpVector,Direction:oDirection});}
+var lastConfirmResult=false;cubeNextStep.DeepCopy(tmpClearCube);cubeNextStep.X=this.X+oDirection.X()*iLength;cubeNextStep.Y=this.Y+oDirection.Y()*iLength;cubeNextStep.Z=this.Z+oDirection.Z()*iLength;if(this.Shape!=null&&this.EnableCollision==true)
+{tmpVector.X=oDirection.X()*iLength;tmpVector.Y=oDirection.Y()*iLength;lastConfirmResult=this.OnConfirmMovable.Invoke({Cube:cubeNextStep,Shape:this.Shape,Velocity:tmpVector,Direction:oDirection});}
 else
 {lastConfirmResult=true;}
 if(lastConfirmResult==false)
@@ -1295,31 +1296,31 @@ this.BackgroundRepeat.Set=function(value)
 else
 {this.LinkedPlayGround.LinkedDisplayManager().HTMLElement().style.backgroundRepeat="no-repeat";}
 _backgroundRepeat=value;}
-this.Width;this.Height;this.Sharps=new doufu.CustomTypes.Collection(doufu.Display.Drawing.Polygon);this.UsePointCollision=true;var _camera=new doufu.Game.PlayGround.Camera();this.NewProperty("Camera");this.Camera.Get=function()
+this.Width;this.Height;this.Shapes=new doufu.CustomTypes.Collection(doufu.Display.Drawing.Polygon);this.UsePointCollision=true;var _camera=new doufu.Game.PlayGround.Camera();this.NewProperty("Camera");this.Camera.Get=function()
 {return _camera;}
 this.InitSprites=new doufu.CustomTypes.Collection(doufu.Game.Sprites.Sprite);this.ConfirmMovable=function(obj)
-{if(obj.Sharp==this.Sharp)
+{if(obj.Shape==this.Shape)
 {return true;}
-var tmpColideDrawable1,tmpColideDrawable2;if(obj.Sharp.InstanceOf(doufu.Display.Drawing.Rectangle))
-{tmpRectangle1.DeepCopy(obj.Sharp);tmpRectangle1.X+=obj.Cube.X;tmpRectangle1.Y+=obj.Cube.Y;tmpColideDrawable1=tmpRectangle1;}
-else if(obj.Sharp.InstanceOf(doufu.Display.Drawing.Polygon))
-{tmpPolygon1.DeepCopy(obj.Sharp);for(var j=0;i<tmpPolygon1.Length();i++)
+var tmpColideDrawable1,tmpColideDrawable2;if(obj.Shape.InstanceOf(doufu.Display.Drawing.Rectangle))
+{tmpRectangle1.DeepCopy(obj.Shape);tmpRectangle1.X+=obj.Cube.X;tmpRectangle1.Y+=obj.Cube.Y;tmpColideDrawable1=tmpRectangle1;}
+else if(obj.Shape.InstanceOf(doufu.Display.Drawing.Polygon))
+{tmpPolygon1.DeepCopy(obj.Shape);for(var j=0;i<tmpPolygon1.Length();i++)
 {tmpPolygon1.Items(j).X+=obj.Cube.X;tmpPolygon1.Items(j).Y+=obj.Cube.Y;}
 tmpColideDrawable1=tmpPolygon1;}
-if(this.Sharps.Length()>0)
-{for(var k=0;k<this.Sharps.Length();k++)
-{if(this.UsePointCollision==true&&obj.Sharp.InstanceOf(doufu.Display.Drawing.Rectangle))
-{var x=Math.round(tmpColideDrawable1.Width/2)+tmpColideDrawable1.X;var y=Math.round(tmpColideDrawable1.Height/2)+tmpColideDrawable1.Y;tmpVector1.X=x-obj.Velocity.X;tmpVector1.Y=y-obj.Velocity.Y;tmpVector2.X=obj.Velocity.X+x;tmpVector2.Y=obj.Velocity.Y+y;tmpPolygon1.Clear();tmpPolygon1.Add(tmpVector1);tmpPolygon1.Add(tmpVector2);if(doufu.Game.Helpers.IsCollided(tmpPolygon1,this.Sharps.Items(k),obj.Direction))
+if(this.Shapes.Length()>0)
+{for(var k=0;k<this.Shapes.Length();k++)
+{if(this.UsePointCollision==true&&obj.Shape.InstanceOf(doufu.Display.Drawing.Rectangle))
+{var x=Math.round(tmpColideDrawable1.Width/2)+tmpColideDrawable1.X;var y=Math.round(tmpColideDrawable1.Height/2)+tmpColideDrawable1.Y;tmpVector1.X=x-obj.Velocity.X;tmpVector1.Y=y-obj.Velocity.Y;tmpVector2.X=obj.Velocity.X+x;tmpVector2.Y=obj.Velocity.Y+y;tmpPolygon1.Clear();tmpPolygon1.Add(tmpVector1);tmpPolygon1.Add(tmpVector2);if(doufu.Game.Helpers.IsCollided(tmpPolygon1,this.Shapes.Items(k),obj.Direction))
 {return false;}}
-else if(doufu.Game.Helpers.IsCollided(tmpColideDrawable1,this.Sharps.Items(k),obj.Direction))
+else if(doufu.Game.Helpers.IsCollided(tmpColideDrawable1,this.Shapes.Items(k),obj.Direction))
 {return false;}}}
 for(var i=0;i<this.LinkedPlayGround.GameObjects().Length();i++)
-{var gameObject=this.LinkedPlayGround.GameObjects().Items(i);if(gameObject.InstanceOf(doufu.Game.Sprites.Sprite)&&gameObject.Sharp!=null)
-{if(obj.Sharp!=gameObject.Sharp)
-{tmpCube.DeepCopy(gameObject);if(gameObject.Sharp.InstanceOf(doufu.Display.Drawing.Rectangle))
-{tmpRectangle2.DeepCopy(gameObject.Sharp);tmpRectangle2.X+=tmpCube.X;tmpRectangle2.Y+=tmpCube.Y;tmpColideDrawable2=tmpRectangle2;}
-else if(gameObject.Sharp.InstanceOf(doufu.Display.Drawing.Polygon))
-{tmpPolygon2.DeepCopy(gameObject.Sharp);for(var j=0;j<tmpPolygon2.Length();j++)
+{var gameObject=this.LinkedPlayGround.GameObjects().Items(i);if(gameObject.InstanceOf(doufu.Game.Sprites.Sprite)&&gameObject.Shape!=null)
+{if(obj.Shape!=gameObject.Shape)
+{tmpCube.DeepCopy(gameObject);if(gameObject.Shape.InstanceOf(doufu.Display.Drawing.Rectangle))
+{tmpRectangle2.DeepCopy(gameObject.Shape);tmpRectangle2.X+=tmpCube.X;tmpRectangle2.Y+=tmpCube.Y;tmpColideDrawable2=tmpRectangle2;}
+else if(gameObject.Shape.InstanceOf(doufu.Display.Drawing.Polygon))
+{tmpPolygon2.DeepCopy(gameObject.Shape);for(var j=0;j<tmpPolygon2.Length();j++)
 {tmpPolygon2.Items(j).X+=tmpCube.X;tmpPolygon2.Items(j).Y+=tmpCube.Y;}
 tmpColideDrawable2=tmpPolygon2;}
 if(tmpCube.Z==obj.Cube.Z&&doufu.Game.Helpers.IsCollided(tmpColideDrawable1,tmpColideDrawable2))
@@ -1373,7 +1374,7 @@ this.Height.Set=function(value)
 {elmtBorder.Native().style.height=value+"px";}
 var _base_Popup=this.OverrideMethod("Popup",function(x,y,msg)
 {this.Text(msg);elmtBorder.Native().style.left=x+"px";elmtBorder.Native().style.top=y+"px";this.Show();if(this.StickyTime!=0)
-{var stickyTime=this.StickyTime;if(msg.length>this.BaseTextLength)
+{var stickyTime=this.StickyTime;if(msg.length>this.BaseTextLength&&this.StickyFactor!=0)
 {stickyTime=msg.length*this.StickyFactor;}
 if(idDisplaying==true&&stickyTimer!=null)
 {clearInterval(stickyTimer);}
@@ -1535,21 +1536,22 @@ if(this.Timeout()>0)
 {timerCancel=setTimeout(doufu.OOP._callBacker(function(){if(this.ReadyState==3)
 {sGCallbackFunc=doufu.Http.JSON.CallbackManager.Unregister(this);this.ReadyState=5;this.OnCancel.Invoke();}},this),this.Timeout());}}
 this.Dispose=function()
-{this.Close();container=null;script=null
-delete container;delete script}
+{this.Close();script=null
+delete script}
 this.Close=function()
 {if(_callbackParameterName!=null)
 {doufu.Http.JSON.CallbackManager.Unregister(this);}
 if(this.ReadyState==2)
 {var self=this;doufu.System.Logger.Error("doufu.Http.JSON::Close(): ReadyState = 2; Please report this error to homyu.shinn@gmail.com .");setTimeout(function()
 {this.Close.call(self);},500);}
-var container=document.getElementById(CONTAINER_ID);if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer&&doufu.Browser.BrowserDetect.Version<8)
+var container=document.getElementById(CONTAINER_ID);var cleanup=function(script){for(var prop in script){delete script[prop];}}
+if(doufu.Browser.BrowserDetect.Browser==doufu.Browser.BrowserDetect.BrowserEnum.Explorer&&doufu.Browser.BrowserDetect.Version<8)
 {var myScript=script;var paramName=_callbackParameterName;setTimeout(function()
 {if(container!=null&&paramName!=null)
-{container.removeChild(myScript);}},5000);}
+{container.removeChild(myScript);cleanup(myScript);}},5000);}
 else
 {if(container!=null&&_callbackParameterName!=null)
-{container.removeChild(script);}}
+{container.removeChild(script);cleanup(script);}}
 this.ReadyState=5;}
 this.Ctor=function()
 {this.OnSuccess.Attach(new doufu.Event.CallBack(function()
@@ -1602,5 +1604,3 @@ g.OnKeyUp.Attach(new doufu.Event.CallBack(function(sender,args)
 {statusChanged=true;}
 this.IsKeyDown=true;this.OnKeyDown.Invoke({StatusChanged:statusChanged});}},this));}
 this.Ctor();}
-; 
-doufu.__version = "0.0.0.2"; 
