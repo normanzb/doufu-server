@@ -66,8 +66,7 @@ namespace Doufu.JSON
                 }
                 
                 this.Context.Response.Write(retJString);
-                this.Context.Response.End();
-                this.Context.Response.Close();
+                this.Context.ApplicationInstance.CompleteRequest();
             }
 
             /// <summary>
@@ -137,7 +136,7 @@ namespace Doufu.JSON
         /// <param name="bAllowNonStandardVariableName">True to allow non-standard variable name, for example {"foo\0\nfoo":"str"} is allowed.
         /// Otherwise incorrect format exception will be thrown.</param>
         /// <returns>Return a doufu json object</returns>
-        public static JObject Parse(string sJSON)
+        public static JSONObject Parse(string sJSON)
         {
             return Parse(sJSON, false);
         }
@@ -149,14 +148,33 @@ namespace Doufu.JSON
         /// <param name="bAllowNonStandardVariableName">True to allow non-standard variable name, for example {"foo\0\nfoo":"str"} is allowed.
         /// Otherwise incorrect format exception will be thrown.</param>
         /// <returns>Return a doufu json object</returns>
-        public static JObject Parse(string sJSON, bool bAllowNonStandardVariableName)
+        public static JSONObject Parse(string sJSON, bool bAllowNonStandardVariableName)
         {
             sJSON = sJSON.Trim();
 
-            if (sJSON[0] != BRACKET_START || sJSON[sJSON.Length - 1] != BRACKET_END)
+            // indicate current json is array format
+            bool isArray = false;
+
+            if (sJSON[0] == BRACKET_START)
             {
-                throw new Exception("Incorrect format");
+                if (sJSON[sJSON.Length - 1] != BRACKET_END)
+                {
+                    throw new Exception("Incorrect format, json starts with { but not ends with }");
+                }
             }
+            else if (sJSON[0] == BRACE_START)
+            {
+                if (sJSON[sJSON.Length - 1] != BRACE_END)
+                {
+                    throw new Exception("Incorrect format, json starts with [ but not ends with ]");
+                }
+                isArray = true;
+            }
+            else
+            {
+                throw new Exception("Incorrect format, json should starts with { or [");
+            }
+            
 
             // remove brackets
             sJSON = sJSON.Substring(1, sJSON.Length - 2);
@@ -164,6 +182,7 @@ namespace Doufu.JSON
             sJSON = sJSON.Trim();
 
             JObject jsonRet = new JObject();
+            JArray jsonArrRet = new JArray();
             Regex reVariableName = new Regex(@"^[""|'][a-zA-Z$]+[a-zA-Z0-9_\$]*[""|']$", RegexOptions.None);
 
             if (bAllowNonStandardVariableName)
@@ -175,15 +194,24 @@ namespace Doufu.JSON
             Regex reIsNumber = new Regex(@"^[0-9]*$", RegexOptions.None);
 
             string sVariableName = string.Empty;
-            IJSONObject oVariableValue;
+            JSONObject oVariableValue;
 
             ParsingStatus iStatus = ParsingStatus.Unstarted;
 
             Collection<char> cStartSymbs = new Collection<char>();
             Collection<char> cEndSymbs = new Collection<char>();
 
-            iStatus = ParsingStatus.ExpectVariableName;
+            if (isArray)
+            {
+                iStatus = ParsingStatus.ExpectVariableValue;
+            }
+            else
+            {
+                iStatus = ParsingStatus.ExpectVariableName;
+            }
 
+            // indicate whether the last loop exited with error.
+            // if there were error, the iConditionMet would be 0
             int iConditionMet = 1;
 
             for (int i = 0; i < sJSON.Length; )
@@ -229,7 +257,14 @@ namespace Doufu.JSON
                         oVariableValue = Parse(sInnerJSON.ToString());
 
                         // add value
-                        jsonRet.Items.Add(sVariableName, oVariableValue);
+                        if (isArray)
+                        {
+                            jsonArrRet.Value.Add(oVariableValue);
+                        }
+                        else
+                        {
+                            jsonRet.Items.Add(sVariableName, oVariableValue);
+                        }
 
                         i = ++j;
                         
@@ -247,7 +282,54 @@ namespace Doufu.JSON
                 }
                 if (iStatus == (iStatus | ParsingStatus.ExpectStartBrace))
                 {
+                    // check if it is "["
+                    if (BRACE_START == sJSON[i])
+                    {
+                        
+                        StringBuilder sInnerJSON = new StringBuilder();
+                        int iBracketCounter = 0;
+                        int j;
+                        for (j = i; j < sJSON.Length; j++)
+                        {
 
+                            sInnerJSON.Append(sJSON[j]);
+
+                            if (sJSON[j] == BRACE_START)
+                            {
+                                iBracketCounter++;
+                            }
+                            else if (sJSON[j] == BRACE_END)
+                            {
+                                iBracketCounter--;
+                            }
+
+                            if (iBracketCounter == 0)
+                            {
+                                break;
+                            }
+
+                        }
+
+                        oVariableValue = Parse(sInnerJSON.ToString());
+
+                        // add value
+                        if (isArray)
+                        {
+                            jsonArrRet.Value.Add(oVariableValue);
+                        }
+                        else
+                        {
+                            jsonRet.Items.Add(sVariableName, oVariableValue);
+                        }
+
+                        i = ++j;
+
+                        iStatus = ParsingStatus.ExpectCommas |
+                            ParsingStatus.ExpectEOS |
+                            ParsingStatus.ExpectBlank;
+                        iConditionMet++;
+                        continue;
+                    }
                 }
                 if (iStatus == (iStatus | ParsingStatus.ExpectEndBrace))
                 {
@@ -315,7 +397,14 @@ namespace Doufu.JSON
                             oVariableValue = new JString(sFinalValue);
 
                             // add value
-                            jsonRet.Items.Add(sVariableName, oVariableValue);
+                            if (isArray)
+                            {
+                                jsonArrRet.Value.Add(oVariableValue);
+                            }
+                            else
+                            {
+                                jsonRet.Items.Add(sVariableName, oVariableValue);
+                            }
 
                             i = j + 1;
 
@@ -355,7 +444,14 @@ namespace Doufu.JSON
                             oVariableValue = new JBoolean(bool.Parse(sBool.ToString()));
 
                             // add value
-                            jsonRet.Items.Add(sVariableName, oVariableValue);
+                            if (isArray)
+                            {
+                                jsonArrRet.Value.Add(oVariableValue);
+                            }
+                            else
+                            {
+                                jsonRet.Items.Add(sVariableName, oVariableValue);
+                            }
 
                             i += j + 1;
 
@@ -394,7 +490,14 @@ namespace Doufu.JSON
                             oVariableValue = new JNumber(Int32.Parse(sNumber.ToString()));
 
                             // add value
-                            jsonRet.Items.Add(sVariableName, oVariableValue);
+                            if (isArray)
+                            {
+                                jsonArrRet.Value.Add(oVariableValue);
+                            }
+                            else
+                            {
+                                jsonRet.Items.Add(sVariableName, oVariableValue);
+                            }
 
                             i = j;
 
@@ -424,8 +527,16 @@ namespace Doufu.JSON
                     if (i < sJSON.Length && sJSON[i] == ',')
                     {
                         i++;
-                        iStatus = ParsingStatus.ExpectVariableName |
-                            ParsingStatus.ExpectBlank;
+                        if (isArray)
+                        {
+                            iStatus = ParsingStatus.ExpectVariableValue |
+                                ParsingStatus.ExpectBlank;
+                        }
+                        else
+                        {
+                            iStatus = ParsingStatus.ExpectVariableName |
+                                ParsingStatus.ExpectBlank;
+                        }
                         iConditionMet++;
                         continue;
                     }
@@ -444,8 +555,30 @@ namespace Doufu.JSON
                 
             }
 
-            return jsonRet;
+            if (isArray)
+            {
+                return jsonArrRet;
+            }
+            else
+            {
+                return jsonRet;
+            }
 
+        }
+
+        /// <summary>
+        /// return true if the obj is not a number
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static bool IsNaN(IJSONObject obj)
+        {
+            if (obj == JNumber.JNaN)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

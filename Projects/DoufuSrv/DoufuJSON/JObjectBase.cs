@@ -9,12 +9,12 @@ namespace Doufu.JSON
     /// The base object for all Doufu.JSON objects
     /// </summary>
     /// <typeparam name="T">Specify the corresponding c# object</typeparam>
-    public class JObjectBase<T>: IJSONObject
+    public class JObjectBase<T>: JSONObject
     {
-        private Dictionary<string, IJSONObject> _items = new Dictionary<string, IJSONObject>();
+        private Dictionary<string, JSONObject> _items = new Dictionary<string, JSONObject>();
         private T _value;
 
-        public Dictionary<string, IJSONObject> Items
+        public Dictionary<string, JSONObject> Items
         {
             get
             {
@@ -34,7 +34,7 @@ namespace Doufu.JSON
             }
         }
 
-        public virtual IJSONObject this[string key]
+        public virtual JSONObject this[string key]
         {
             get
             {
@@ -50,13 +50,13 @@ namespace Doufu.JSON
         /// Stringify this object to JSON string.
         /// </summary>
         /// <returns>JSON string</returns>
-        public virtual string ToJSON()
+        public override string ToJSON()
         {
             string subObjStr = string.Empty;
             bool firstItem = true;
 
 
-            foreach (System.Collections.Generic.KeyValuePair<string, IJSONObject> kv in this.Items)
+            foreach (System.Collections.Generic.KeyValuePair<string, JSONObject> kv in this.Items)
             {
                 if (!firstItem)
                 {
@@ -69,7 +69,13 @@ namespace Doufu.JSON
 
                 string skey = kv.Key.ToString().Trim() == string.Empty ? "\"\"" : kv.Key.ToString().Trim();
 
-                subObjStr += System.String.Format(@"""{0}"": {1}", skey, kv.Value.ToJSON());
+                string valueStr = "null";
+                if (kv.Value != null)
+                {
+                    valueStr = kv.Value.ToJSON();
+                }
+
+                subObjStr += System.String.Format(@"""{0}"": {1}", skey, valueStr);
 
                 firstItem = false;
             }
@@ -88,6 +94,5 @@ namespace Doufu.JSON
                 return "null";
             }
         }
-
     }
 }

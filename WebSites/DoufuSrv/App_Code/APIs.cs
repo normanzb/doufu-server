@@ -68,7 +68,7 @@ public class APIs : System.Web.Services.WebService
     }
 
     [WebMethod(EnableSession = true)]
-    private bool SavePosition(int x, int y, int z)
+    private bool SavePosition(long x, long y, long z)
     {
         bool bRet;
 
@@ -144,7 +144,7 @@ public class APIs : System.Web.Services.WebService
         // Process data which user posted
         if (sStatusJSONString != null && sStatusJSONString.Trim() != string.Empty)
         {
-            jStatus = Helpers.Parse(sStatusJSONString);
+            jStatus = Helpers.Parse(sStatusJSONString) as JObject;
 
             jStatusMovement = ((JObject)(jStatus.Items[KEY_MOVEMENTS]));
 

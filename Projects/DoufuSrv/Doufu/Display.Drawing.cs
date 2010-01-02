@@ -10,10 +10,10 @@ namespace Doufu.Display.Drawing
     }
     public class Point : Drawable
     {
-        private int _y;
-        private int _x;
+        private long _y;
+        private long _x;
 
-        public int Y
+        public long Y
         {
             get
             {
@@ -25,7 +25,7 @@ namespace Doufu.Display.Drawing
             }
         }
 
-        public int X
+        public long X
         {
             get
             {
@@ -40,10 +40,10 @@ namespace Doufu.Display.Drawing
 
     public class Rectangle : Point
     {
-        private int _width;
-        private int _height;
+        private long _width;
+        private long _height;
 
-        public int Width
+        public long Width
         {
             get
             {
@@ -55,7 +55,7 @@ namespace Doufu.Display.Drawing
             }
         }
 
-        public int Height
+        public long Height
         {
             get
             {
@@ -70,10 +70,10 @@ namespace Doufu.Display.Drawing
 
     public class Cube : Rectangle
     {
-        private int _z;
-        private int _depth;
-        
-        public int Z
+        private long _z;
+        private long _depth;
+
+        public long Z
         {
             get
             {
@@ -85,7 +85,7 @@ namespace Doufu.Display.Drawing
             }
         }
 
-        public int Depth
+        public long Depth
         {
             get
             {

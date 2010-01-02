@@ -5,13 +5,13 @@ using System.Text;
 
 namespace Doufu.JSON
 {
-    public class JArray : Doufu.JSON.JObjectBase<Collection<IJSONObject>>, IJSONObject
+    public class JArray : Doufu.JSON.JObjectBase<Collection<JSONObject>>, IJSONObject
     {
-        public class JArrayDictionary: Dictionary<string, IJSONObject>
+        public class JArrayDictionary : Dictionary<string, JSONObject>
         {
-            private Collection<IJSONObject> myArray;
+            private Collection<JSONObject> myArray;
 
-            public JArrayDictionary(Collection<IJSONObject> collection)
+            public JArrayDictionary(Collection<JSONObject> collection)
             {
                 this.myArray = collection;
             }
@@ -38,24 +38,25 @@ namespace Doufu.JSON
             /// </summary>
             /// <param name="key"></param>
             /// <returns></returns>
-            public new IJSONObject this[string key]
+            public new JSONObject this[string key]
             {
                 get
                 {
-                    IJSONObject ret;
+                    JSONObject ret;
                     bool bParsed = false;
                     int index = 0;
                     bParsed = GetNumber(key, out index);
 
                     if (bParsed)
                     {
-                        return this[index];
+                        ret = this[index];
                     }
                     else
                     {
-                        return base[key];
+                        ret = base[key];
                     }
 
+                    return ret;
                 }
                 set
                 {
@@ -78,7 +79,7 @@ namespace Doufu.JSON
             /// </summary>
             /// <param name="index"></param>
             /// <returns></returns>
-            public IJSONObject this[int index]
+            public JSONObject this[int index]
             {
                 get
                 {
@@ -96,19 +97,19 @@ namespace Doufu.JSON
 
         public JArray()
         {
-            this.Value = new Collection<IJSONObject>();
+            this.Value = new Collection<JSONObject>();
             myJArrayDictionary = new JArrayDictionary(this.Value);
         }
 
-        public JArray(Collection<IJSONObject> value)
+        public JArray(Collection<JSONObject> value)
         {
             this.Value = value;
             myJArrayDictionary = new JArrayDictionary(this.Value);
         }
 
-        public JArray(IJSONObject[] value)
+        public JArray(JSONObject[] value)
         {
-            Collection<IJSONObject> cllctValue = new Collection<IJSONObject>();
+            Collection<JSONObject> cllctValue = new Collection<JSONObject>();
             for (int i = 0; i < value.Length; i++)
             {
                 cllctValue.Add(value[i]);
@@ -127,7 +128,7 @@ namespace Doufu.JSON
             }
         }
 
-        public IJSONObject this[int index]
+        public JSONObject this[int index]
         {
             get
             {
@@ -139,7 +140,7 @@ namespace Doufu.JSON
             }
         }
 
-        public override IJSONObject this[string key]
+        public override JSONObject this[string key]
         {
             get
             {
@@ -161,18 +162,26 @@ namespace Doufu.JSON
                 {
                     sRet += ",";
                 }
-                sRet += o.ToJSON();
+                if (o == null)
+                {
+                    sRet += "null";
+                }
+                else
+                {
+                    sRet += o.ToJSON();
+                }
+                
                 bFirstElement = false;
             }
             return sRet + "]";
         }
 
-        public static implicit operator JArray(IJSONObject[] jsonObjects)
+        public static implicit operator JArray(JSONObject[] jsonObjects)
         {
             return new JArray(jsonObjects);
         }
 
-        public static implicit operator JArray(Collection<IJSONObject> jsonCollection)
+        public static implicit operator JArray(Collection<JSONObject> jsonCollection)
         {
             return new JArray(jsonCollection);
         }
