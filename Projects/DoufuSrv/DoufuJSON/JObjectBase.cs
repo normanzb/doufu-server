@@ -38,7 +38,15 @@ namespace Doufu.JSON
         {
             get
             {
-                return this.Items[key];
+            	JSONObject ret = null;
+            	try
+            	{
+            		ret = this.Items[key];
+            	}
+            	catch(Exception)
+            	{
+            	}
+                return ret;
             }
             set
             {
