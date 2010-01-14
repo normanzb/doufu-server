@@ -89,6 +89,10 @@ namespace UnitTest
                 // Parser Test
                 /////////////////////////
 
+                // unicode tests
+
+                JArray unicode1 = (JArray)Helpers.Parse(@"['HR\u9762\u8bd5',3,3,4]");
+
                 // array tests
 
                 JArray array = (JArray)Helpers.Parse(@"[1,3,3,4]");
@@ -97,7 +101,7 @@ namespace UnitTest
 
                 JObject array3 = (JObject)Helpers.Parse(@"{'Processes':['20ed6436-5b44-47f8-8642-1184811d4a99','20ed6436-5b44-47f8-8642-1184811d4a99']}");
 
-                JObject array4 = (JObject)Helpers.Parse(@"{'Processes':[{'name':'11'},{'name':'22'}]}");
+                JObject array4 = (JObject)Helpers.Parse(@"{'name': 'asfdasf', 'items': [{'name': 'HR\u9762\u8bd5'},{'name': '\u4f53\u68c0'},{'name': '\u5165\u804c'},{'name': '\u5ba2\u6237\u9762\u8bd5'},{'name': '\u7b7e\u7f72OFFER'},{'name': '\u90e8\u95e8\u9762\u8bd5'}]}");
 
                 // positive tests
 

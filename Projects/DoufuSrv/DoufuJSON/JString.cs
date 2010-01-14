@@ -73,6 +73,9 @@ namespace Doufu.JSON
             {
                 ret = Value.ToString();
                 ret = ret.Replace("\\", "\\\\");
+                // chars that need to be reverted to original format
+                ret = ret.Replace("\\\\u", "\\u");
+                // to escape
                 ret = ret.Replace("\n", "\\n");
                 ret = ret.Replace("\r", "\\r");
                 ret = ret.Replace("\t", "\\t");
