@@ -144,7 +144,7 @@ public class APIs : System.Web.Services.WebService
         // Process data which user posted
         if (sStatusJSONString != null && sStatusJSONString.Trim() != string.Empty)
         {
-            jStatus = Helpers.Parse(sStatusJSONString) as JObject;
+            jStatus = (JObject)Helpers.Parse(sStatusJSONString);
 
             jStatusMovement = ((JObject)(jStatus.Items[KEY_MOVEMENTS]));
 
@@ -153,9 +153,9 @@ public class APIs : System.Web.Services.WebService
             // if movement status is not null, then save char pos
             if (jStatusMovement != null)
             {
-                this.SavePosition(((JNumber)(jStatusMovement.Items["X"])).Value,
-                    ((JNumber)jStatusMovement.Items["Y"]).Value,
-                    ((JNumber)jStatusMovement.Items["Z"]).Value);
+                this.SavePosition((int)((JNumber)(jStatusMovement.Items["X"])).Value,
+                    (int)((JNumber)jStatusMovement.Items["Y"]).Value,
+                    (int)((JNumber)jStatusMovement.Items["Z"]).Value);
             }
 
             // if the user said something
