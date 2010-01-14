@@ -16,9 +16,9 @@ namespace Doufu.JSON
             {
                 this.Context = System.Web.HttpContext.Current;
                 this.Context.Response.ContentType = "application/json";
-                this.Context.Response.Charset = "utf-8";
+                this.Context.Response.Charset = "";
                 this.Context.Response.Cache.SetCacheability(System.Web.HttpCacheability.NoCache);
-                
+                this.Context.Response.BinaryWrite(new byte[] { 0xEF, 0xBB, 0xBF });
             }
 
             /// <summary>
@@ -62,9 +62,9 @@ namespace Doufu.JSON
                 else
                 {
                     retJString = sCallback + "(" + oJson.ToJSON() + ");" + "\r\n\r\n";
-                    
+
                 }
-                
+
                 this.Context.Response.Write(retJString);
                 this.Context.ApplicationInstance.CompleteRequest();
             }
@@ -119,7 +119,7 @@ namespace Doufu.JSON
             ExpectQuote = 1,
             ExpectLetter = 2,
             ExpectNumber = 3,
-            
+
         }
 
         private const char BRACKET_START = '{';
@@ -174,7 +174,7 @@ namespace Doufu.JSON
             {
                 throw new Exception("Incorrect format, json should starts with { or [");
             }
-            
+
 
             // remove brackets
             sJSON = sJSON.Substring(1, sJSON.Length - 2);
@@ -203,7 +203,9 @@ namespace Doufu.JSON
 
             if (isArray)
             {
-                iStatus = ParsingStatus.ExpectVariableValue;
+                iStatus = ParsingStatus.ExpectVariableValue |
+                    ParsingStatus.ExpectStartBracket |
+                    ParsingStatus.ExpectStartBrace;
             }
             else
             {
@@ -230,7 +232,7 @@ namespace Doufu.JSON
                     // is start symbol?
                     if (BRACKET_START == sJSON[i])
                     {
-                        StringBuilder sInnerJSON =new StringBuilder();
+                        StringBuilder sInnerJSON = new StringBuilder();
                         int iBracketCounter = 0;
                         int j;
                         for (j = i; j < sJSON.Length; j++)
@@ -251,7 +253,7 @@ namespace Doufu.JSON
                             {
                                 break;
                             }
-                            
+
                         }
 
                         oVariableValue = Parse(sInnerJSON.ToString());
@@ -267,7 +269,7 @@ namespace Doufu.JSON
                         }
 
                         i = ++j;
-                        
+
                         iStatus = ParsingStatus.ExpectCommas |
                             ParsingStatus.ExpectEOS |
                             ParsingStatus.ExpectBlank;
@@ -275,7 +277,7 @@ namespace Doufu.JSON
                         continue;
                     }
                 }
-                   
+
                 if (iStatus == (iStatus | ParsingStatus.ExpectEndBracket))
                 {
 
@@ -285,7 +287,7 @@ namespace Doufu.JSON
                     // check if it is "["
                     if (BRACE_START == sJSON[i])
                     {
-                        
+
                         StringBuilder sInnerJSON = new StringBuilder();
                         int iBracketCounter = 0;
                         int j;
@@ -337,7 +339,7 @@ namespace Doufu.JSON
                 if (iStatus == (iStatus | ParsingStatus.ExpectVariableName))
                 {
 
-                    StringBuilder sName =new StringBuilder();
+                    StringBuilder sName = new StringBuilder();
                     string sActualName;
                     bool bBroke = false;
                     int j;
@@ -379,7 +381,7 @@ namespace Doufu.JSON
                         int j;
                         for (j = i + 1; j < sJSON.Length; j++)
                         {
-                            if (sJSON[j] == sJSON[i] && sJSON[j-1] != '\\')
+                            if (sJSON[j] == sJSON[i] && sJSON[j - 1] != '\\')
                             {
                                 bBroke = true;
                                 break;
@@ -475,7 +477,7 @@ namespace Doufu.JSON
                             {
                                 sNumber.Append(sJSON[j]);
                             }
-                            else 
+                            else
                             {
                                 if (sJSON[j] != '.')
                                 {
@@ -530,6 +532,8 @@ namespace Doufu.JSON
                         if (isArray)
                         {
                             iStatus = ParsingStatus.ExpectVariableValue |
+                                ParsingStatus.ExpectStartBracket |
+                                ParsingStatus.ExpectStartBrace |
                                 ParsingStatus.ExpectBlank;
                         }
                         else
@@ -552,7 +556,7 @@ namespace Doufu.JSON
                 }
 
 
-                
+
             }
 
             if (isArray)
