@@ -9,7 +9,7 @@ namespace UnitTest
     {
         static void Main(string[] args)
         {
-            if (true)
+            if (false)
             {
                 /////////////////////////
                 // Stringifier Test
@@ -96,6 +96,8 @@ namespace UnitTest
                 JObject array2 = (JObject)Helpers.Parse(@"{'Processes':['20ed6436-5b44-47f8-8642-1184811d4a99']}");
 
                 JObject array3 = (JObject)Helpers.Parse(@"{'Processes':['20ed6436-5b44-47f8-8642-1184811d4a99','20ed6436-5b44-47f8-8642-1184811d4a99']}");
+
+                JObject array4 = (JObject)Helpers.Parse(@"{'Processes':[{'name':'11'},{'name':'22'}]}");
 
                 // positive tests
 
