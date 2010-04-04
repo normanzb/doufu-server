@@ -191,7 +191,7 @@ namespace Doufu.JSON
             }
 
             Regex reIsLetter = new Regex(@"^[a-zA-Z]*$", RegexOptions.None);
-            Regex reIsNumber = new Regex(@"^[0-9]*$", RegexOptions.None);
+            Regex reIsNumber = new Regex(@"^-?[0-9]+$", RegexOptions.None);
 
             string sVariableName = string.Empty;
             JSONObject oVariableValue;
