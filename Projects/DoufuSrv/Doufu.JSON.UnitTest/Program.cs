@@ -107,6 +107,7 @@ namespace UnitTest
 
                 JObject p_number1 = (JObject)Helpers.Parse(@"{""test"":23423}");
                 JObject p_number2_blank = (JObject)Helpers.Parse(@"  {  ""test""   :  23423  }   ");
+                JObject p_number3 = (JObject)Helpers.Parse(@"{""test"":-23}"); // negative number
 
                 JObject p_string1 = (JObject)Helpers.Parse(@"{""test"":""23423""}");
                 JObject p_string2 = (JObject)Helpers.Parse(@"{""test"":'23423'}");

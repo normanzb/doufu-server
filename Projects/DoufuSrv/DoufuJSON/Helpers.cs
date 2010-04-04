@@ -191,6 +191,7 @@ namespace Doufu.JSON
             }
 
             Regex reIsLetter = new Regex(@"^[a-zA-Z]*$", RegexOptions.None);
+            Regex reIsNumberChar = new Regex(@"^-?[0-9]*$", RegexOptions.None);
             Regex reIsNumber = new Regex(@"^-?[0-9]+$", RegexOptions.None);
 
             string sVariableName = string.Empty;
@@ -466,14 +467,19 @@ namespace Doufu.JSON
                         }
 
                     }
-                    else if (reIsNumber.IsMatch(sJSON[i].ToString()))
+                    else if (reIsNumberChar.IsMatch(sJSON[i].ToString()))
                     {
+                        // check if negative number
+                        if (sJSON[i].ToString() == "-" && !reIsNumber.IsMatch(sJSON[i].ToString() + sJSON[i + 1].ToString()))
+                        {
+                            break;
+                        }
                         StringBuilder sNumber = new StringBuilder();
                         int j;
 
                         for (j = i; j < sJSON.Length; j++)
                         {
-                            if (reIsNumber.IsMatch(sJSON[j].ToString()))
+                            if (reIsNumberChar.IsMatch(sJSON[j].ToString()))
                             {
                                 sNumber.Append(sJSON[j]);
                             }
