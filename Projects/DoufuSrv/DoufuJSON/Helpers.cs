@@ -221,7 +221,7 @@ namespace Doufu.JSON
             {
                 if (iConditionMet <= 0)
                 {
-                    throw new Exception("Incorrect format");
+                    throw new Exception("Incorrect format: Expected " + iStatus.ToString() + " position: " + i.ToString());
                 }
                 else
                 {
