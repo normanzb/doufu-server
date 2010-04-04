@@ -388,6 +388,18 @@ namespace Doufu.JSON
                                 break;
                             }
 
+                            // process escaped unicode
+                            if (sJSON[j] == '\\')
+                            {
+                                if (j + 5 < sJSON.Length && sJSON[j+1] == 'u')
+                                {
+                                    string hex = sJSON.Substring(j + 2, 4);
+                                    sValue.Append((char)Int16.Parse(hex, System.Globalization.NumberStyles.HexNumber));
+                                    j += 5;
+                                    continue;
+                                }
+                            }
+
                             sValue.Append(sJSON[j]);
                         }
 
